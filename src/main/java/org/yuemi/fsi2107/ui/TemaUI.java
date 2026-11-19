@@ -2,24 +2,41 @@ package org.yuemi.fsi2107.ui;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import javax.swing.BorderFactory;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JList;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import javax.swing.UIManager;
+import javax.swing.WindowConstants;
 import javax.swing.plaf.basic.BasicComboBoxUI;
 import javax.swing.plaf.basic.BasicComboPopup;
 import javax.swing.plaf.basic.ComboPopup;
+import javax.swing.plaf.basic.BasicOptionPaneUI;
+import javax.swing.plaf.basic.BasicButtonUI;
 import javax.swing.plaf.basic.BasicScrollBarUI;
 import javax.swing.DefaultListCellRenderer;
+import java.awt.BorderLayout;
+import java.awt.Dialog;
+import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
+import javax.swing.AbstractAction;
+import javax.swing.KeyStroke;
 
 /**
  * Palet warna bersama untuk mode terang dan gelap.
@@ -42,6 +59,150 @@ final class TemaUI {
 
     static boolean isModeGelap() {
         return modeGelap;
+    }
+
+    static void tampilkanPesan(Component induk, Object pesan, String judul, int tipe) {
+        if (!modeGelap) {
+            JOptionPane.showMessageDialog(induk, pesan, judul, tipe);
+            return;
+        }
+        tampilkanDialog(induk, pesan, judul, tipe, JOptionPane.DEFAULT_OPTION);
+    }
+
+    static int tampilkanKonfirmasi(Component induk, Object pesan, String judul,
+                                    int pilihan, int tipe) {
+        if (!modeGelap) {
+            return JOptionPane.showConfirmDialog(induk, pesan, judul, pilihan, tipe);
+        }
+        return tampilkanDialog(induk, pesan, judul, tipe, pilihan);
+    }
+
+    private static int tampilkanDialog(Component induk, Object pesan, String judul,
+                                       int tipe, int pilihan) {
+        JOptionPane panelPesan = new JOptionPane(pesan, tipe, pilihan);
+        panelPesan.setUI(new BasicOptionPaneUI());
+        panelPesan.setIcon(null);
+        panelPesan.setBackground(warnaPanel());
+        panelPesan.setForeground(warnaTeks());
+        panelPesan.setOpaque(true);
+
+        Window pemilik = induk instanceof Window window
+                ? window : induk == null ? null : SwingUtilities.getWindowAncestor(induk);
+        JDialog dialog = new JDialog(pemilik, judul, Dialog.ModalityType.APPLICATION_MODAL);
+        dialog.setUndecorated(true);
+        dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+
+        JPanel bilahJudul = buatBilahJudul(judul, () -> {
+            panelPesan.setValue(JOptionPane.CLOSED_OPTION);
+            dialog.dispose();
+        });
+
+        JPanel isiDialog = new JPanel(new BorderLayout());
+        isiDialog.setBackground(warnaPanel());
+        isiDialog.setBorder(BorderFactory.createLineBorder(warnaGaris()));
+        isiDialog.add(bilahJudul, BorderLayout.NORTH);
+        isiDialog.add(panelPesan, BorderLayout.CENTER);
+        dialog.setContentPane(isiDialog);
+        aturKomponenDialog(panelPesan);
+
+        panelPesan.addPropertyChangeListener(event -> {
+            if (JOptionPane.VALUE_PROPERTY.equals(event.getPropertyName())
+                    && dialog.isVisible()
+                    && panelPesan.getValue() != JOptionPane.UNINITIALIZED_VALUE) {
+                dialog.dispose();
+            }
+        });
+        dialog.getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW)
+                .put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "tutupDialog");
+        dialog.getRootPane().getActionMap().put("tutupDialog", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                panelPesan.setValue(JOptionPane.CLOSED_OPTION);
+                dialog.dispose();
+            }
+        });
+
+        dialog.pack();
+        dialog.setLocationRelativeTo(induk);
+        dialog.setVisible(true);
+        Object nilai = panelPesan.getValue();
+        return nilai instanceof Integer ? (Integer) nilai : JOptionPane.CLOSED_OPTION;
+    }
+
+    static void siapkanDekorasiGelap(JDialog dialog) {
+        if (modeGelap) {
+            dialog.setUndecorated(true);
+        }
+    }
+
+    static void aturDialogGelap(JDialog dialog, String judul) {
+        if (!modeGelap) {
+            return;
+        }
+
+        Container isiAsli = dialog.getContentPane();
+        JPanel isiDialog = new JPanel(new BorderLayout());
+        isiDialog.setBackground(warnaPanel());
+        isiDialog.setBorder(BorderFactory.createLineBorder(warnaGaris()));
+        isiDialog.add(buatBilahJudul(judul, dialog::dispose), BorderLayout.NORTH);
+        isiDialog.add(isiAsli, BorderLayout.CENTER);
+        dialog.setContentPane(isiDialog);
+        dialog.setBackground(warnaPanel());
+        aturKomponenDialog(isiDialog);
+    }
+
+    private static JPanel buatBilahJudul(String judul, Runnable tutup) {
+        JPanel bilahJudul = new JPanel(new BorderLayout());
+        bilahJudul.setBackground(new Color(0x14181E));
+        bilahJudul.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 6));
+        JLabel teksJudul = new JLabel(judul);
+        teksJudul.setForeground(warnaTeks());
+        bilahJudul.add(teksJudul, BorderLayout.CENTER);
+
+        JButton tombolTutup = new JButton("x");
+        aturTombolDialog(tombolTutup);
+        tombolTutup.addActionListener(event -> tutup.run());
+        bilahJudul.add(tombolTutup, BorderLayout.EAST);
+        return bilahJudul;
+    }
+
+    private static void aturKomponenDialog(Component komponen) {
+        if (komponen instanceof JPanel panel) {
+            panel.setOpaque(true);
+            panel.setBackground(warnaPanel());
+        } else if (komponen instanceof TombolBerwarna) {
+            return;
+        } else if (komponen instanceof JLabel label) {
+            label.setForeground(warnaTeks());
+        } else if (komponen instanceof JButton tombol) {
+            aturTombolDialog(tombol);
+        } else if (komponen instanceof JComboBox<?> combo) {
+            aturComboBox(combo, true);
+        } else if (komponen instanceof JTextField teks) {
+            aturTextField(teks, true);
+        } else if (komponen instanceof JComponent jKomponen) {
+            jKomponen.setOpaque(true);
+            jKomponen.setBackground(warnaPanel());
+            jKomponen.setForeground(warnaTeks());
+        }
+
+        if (komponen instanceof Container wadah) {
+            for (Component anak : wadah.getComponents()) {
+                aturKomponenDialog(anak);
+            }
+        }
+    }
+
+    private static void aturTombolDialog(JButton tombol) {
+        tombol.setUI(new BasicButtonUI());
+        tombol.setBackground(new Color(0x252A33));
+        tombol.setForeground(warnaTeks());
+        tombol.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(warnaGaris()),
+                BorderFactory.createEmptyBorder(5, 14, 5, 14)));
+        tombol.setOpaque(true);
+        tombol.setContentAreaFilled(true);
+        tombol.setFocusPainted(false);
     }
 
     static Color warnaLatar() {
@@ -144,6 +305,9 @@ final class TemaUI {
                         : warnaIsian());
                 setForeground(terpilih && !modeGelap
                         ? new Color(0x263238) : warnaTeks());
+                if (modeGelap) {
+                    setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 3));
+                }
                 return this;
             }
         });
