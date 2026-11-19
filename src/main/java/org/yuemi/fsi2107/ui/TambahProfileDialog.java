@@ -42,6 +42,7 @@ public class TambahProfileDialog extends JDialog {
 
     public TambahProfileDialog(Window induk, ProfileService profileService) {
         super(induk, "Tambah Profil", ModalityType.APPLICATION_MODAL);
+        TemaUI.siapkanDekorasiGelap(this);
         this.profileService = profileService;
 
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
@@ -93,6 +94,7 @@ public class TambahProfileDialog extends JDialog {
 
         perbaruiTampilTarif();
         aturModeGelap(TemaUI.isModeGelap());
+        TemaUI.aturDialogGelap(this, "Tambah Profil");
         pack();
         setLocationRelativeTo(induk);
     }
@@ -168,7 +170,7 @@ public class TambahProfileDialog extends JDialog {
     }
 
     private void tampilkanPeringatan(String pesan) {
-        JOptionPane.showMessageDialog(this, pesan, "Data Belum Lengkap", JOptionPane.WARNING_MESSAGE);
+        TemaUI.tampilkanPesan(this, pesan, "Data Belum Lengkap", JOptionPane.WARNING_MESSAGE);
     }
 
     private void aturModeGelap(boolean aktif) {
