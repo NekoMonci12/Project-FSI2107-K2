@@ -16,9 +16,11 @@ import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
+import javax.swing.event.TableModelEvent;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.FlowLayout;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,14 +33,15 @@ import java.util.List;
 public class TabelTransaksiPanel extends JPanel {
 
     private static final String[] JUDUL_KOLOM =
-            {"No", "Waktu", "Jenis", "Kategori", "Deskripsi", "Nominal", "PPh", "PPN", "Bersih"};
+            {"No", "Waktu", "Jenis", "Kategori", "Deskripsi", "Nominal", "PPh", "PPN", "Bersih", "Pilih"};
 
-    private static final int[] LEBAR_KOLOM = {40, 120, 100, 100, 220, 120, 110, 100, 120};
+    private static final int[] LEBAR_KOLOM = {40, 120, 100, 100, 220, 120, 110, 100, 120, 50};
 
     /** Indeks model kolom pajak: PPh, PPN, dan nominal bersih. */
     private static final int KOLOM_PPH = 6;
     private static final int KOLOM_PPN = 7;
     private static final int KOLOM_BERSIH = 8;
+    private static final int KOLOM_PILIH = 9;
 
     private static final Color WARNA_BARIS_MASUK = new Color(0xE8F5E9);
     private static final Color WARNA_BARIS_KELUAR = new Color(0xFFEBEE);
@@ -50,6 +53,7 @@ public class TabelTransaksiPanel extends JPanel {
     private final JTable tabel;
     private final JScrollPane scrollPane;
     private final JPanel pojokHeader = new JPanel();
+    private final TombolBerwarna tombolPilihSemua;
 
     /** Daftar transaksi yang sedang ditampilkan, sejajar indeks dengan baris tabel. */
     private List<Transaksi> transaksiTampil = new ArrayList<>();
@@ -69,12 +73,17 @@ public class TabelTransaksiPanel extends JPanel {
         modelTabel = new DefaultTableModel(JUDUL_KOLOM, 0) {
             @Override
             public boolean isCellEditable(int baris, int kolom) {
-                return false;
+                return kolom == KOLOM_PILIH;
+            }
+
+            @Override
+            public Class<?> getColumnClass(int kolom) {
+                return kolom == KOLOM_PILIH ? Boolean.class : Object.class;
             }
         };
 
         tabel = new JTable(modelTabel);
-        tabel.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        tabel.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         tabel.setRowHeight(26);
         tabel.setFillsViewportHeight(true);
         tabel.setShowGrid(true);
@@ -82,19 +91,31 @@ public class TabelTransaksiPanel extends JPanel {
         tabel.getTableHeader().setReorderingAllowed(false);
         tabel.setDefaultRenderer(Object.class, new PerenderBaris());
         tabel.getTableHeader().setDefaultRenderer(new PerenderHeader());
+        modelTabel.addTableModelListener(peristiwa -> {
+            if (peristiwa.getColumn() == KOLOM_PILIH
+                    || peristiwa.getType() == TableModelEvent.UPDATE
+                    || peristiwa.getType() == TableModelEvent.DELETE) {
+                perbaruiTombolPilihSemua();
+            }
+        });
 
         aturKolomPajak(true);
 
-        TombolBerwarna tombolHapus = new TombolBerwarna("Hapus Transaksi Terpilih", new Color(0xC62828));
+        TombolBerwarna tombolHapus = new TombolBerwarna("Hapus Batch", new Color(0xC62828));
         tombolHapus.addActionListener(e -> hapusTransaksiTerpilih());
 
-        TombolBerwarna tombolHapusSemua = new TombolBerwarna("Hapus Semua Transaksi", new Color(0xB71C1C));
-        tombolHapusSemua.addActionListener(e -> hapusSemuaTransaksi());
+        tombolPilihSemua = new TombolBerwarna("Pilih Semua", new Color(0x607D8B),
+                TombolBerwarna.Gaya.GARIS);
+        tombolPilihSemua.addActionListener(e -> pilihSemuaTransaksi());
+
+        JPanel panelKiri = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        panelKiri.setOpaque(false);
+        panelKiri.add(tombolPilihSemua);
 
         JPanel panelBawah = new JPanel(new BorderLayout(8, 0));
         panelBawah.setOpaque(false);
         panelBawah.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
-        panelBawah.add(tombolHapusSemua, BorderLayout.WEST);
+        panelBawah.add(panelKiri, BorderLayout.WEST);
         panelBawah.add(tombolHapus, BorderLayout.EAST);
 
         scrollPane = new JScrollPane(tabel);
@@ -156,9 +177,11 @@ public class TabelTransaksiPanel extends JPanel {
                     Transaksi.formatNominal(transaksi.getNominal()),
                     Transaksi.formatNominal(transaksi.getPph()),
                     Transaksi.formatNominal(transaksi.getPpn()),
-                    Transaksi.formatNominal(transaksi.getNominalBersih())
+                    Transaksi.formatNominal(transaksi.getNominalBersih()),
+                    false
             });
         }
+        perbaruiTombolPilihSemua();
 
         if (idTerpilih > 0) {
             for (int i = 0; i < transaksiTampil.size(); i++) {
@@ -171,44 +194,59 @@ public class TabelTransaksiPanel extends JPanel {
     }
 
     private void hapusTransaksiTerpilih() {
-        int baris = tabel.getSelectedRow();
-        if (baris < 0) {
+        List<Transaksi> daftarHapus = new ArrayList<>();
+        for (int baris = 0; baris < modelTabel.getRowCount(); baris++) {
+            Object dipilih = modelTabel.getValueAt(baris, KOLOM_PILIH);
+            if (Boolean.TRUE.equals(dipilih) && baris < transaksiTampil.size()) {
+                daftarHapus.add(transaksiTampil.get(baris));
+            }
+        }
+
+        if (daftarHapus.isEmpty()) {
             TemaUI.tampilkanPesan(this,
-                    "Pilih salah satu baris transaksi yang ingin dihapus.",
+                    "Pilih minimal satu transaksi dengan mencentang kolom Pilih.",
                     "Belum Ada Pilihan", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
 
-        if (baris >= transaksiTampil.size()) {
-            return;
-        }
-        Transaksi transaksi = transaksiTampil.get(baris);
-
         int jawaban = TemaUI.tampilkanKonfirmasi(this,
-                "Hapus transaksi \"" + transaksi.getDeskripsi() + "\" sebesar "
-                        + transaksi.getNominalTerformat() + "?",
-                "Konfirmasi Hapus", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                "Hapus " + daftarHapus.size() + " transaksi yang dipilih?",
+                "Konfirmasi Hapus Batch", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
 
         if (jawaban == JOptionPane.YES_OPTION) {
-            bukuKas.hapusTransaksi(transaksi.getId());
+            for (Transaksi transaksi : daftarHapus) {
+                bukuKas.hapusTransaksi(transaksi.getId());
+            }
         }
     }
 
-    private void hapusSemuaTransaksi() {
-        int jumlahTransaksi = bukuKas.getJumlahTransaksi();
-        if (jumlahTransaksi == 0) {
-            JOptionPane.showMessageDialog(this,
-                    "Tidak ada transaksi yang dapat dihapus.",
-                    "Daftar Kosong", JOptionPane.INFORMATION_MESSAGE);
+    private void pilihSemuaTransaksi() {
+        if (modelTabel.getRowCount() == 0) {
             return;
         }
+        boolean pilihSemua = jumlahTerpilih() != modelTabel.getRowCount();
+        for (int baris = 0; baris < modelTabel.getRowCount(); baris++) {
+            modelTabel.setValueAt(pilihSemua, baris, KOLOM_PILIH);
+        }
+        perbaruiTombolPilihSemua();
+    }
 
-        int jawaban = JOptionPane.showConfirmDialog(this,
-                "Hapus semua " + jumlahTransaksi + " transaksi pada profil aktif?",
-                "Konfirmasi Hapus Semua", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+    private int jumlahTerpilih() {
+        int jumlah = 0;
+        for (int baris = 0; baris < modelTabel.getRowCount(); baris++) {
+            if (Boolean.TRUE.equals(modelTabel.getValueAt(baris, KOLOM_PILIH))) {
+                jumlah++;
+            }
+        }
+        return jumlah;
+    }
 
-        if (jawaban == JOptionPane.YES_OPTION) {
-            bukuKas.hapusSemuaTransaksi();
+    private void perbaruiTombolPilihSemua() {
+        int jumlahBaris = modelTabel.getRowCount();
+        if (jumlahBaris > 0 && jumlahTerpilih() == jumlahBaris) {
+            tombolPilihSemua.setText("Batal Pilih Semua");
+        } else {
+            tombolPilihSemua.setText("Pilih Semua");
         }
     }
 
