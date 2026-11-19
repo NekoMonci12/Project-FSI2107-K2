@@ -1,5 +1,8 @@
 package org.yuemi.fsi2107.ui;
 
+import org.yuemi.fsi2107.ui.ikon.IkonDasar;
+import org.yuemi.fsi2107.ui.ikon.JenisIkon;
+
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import java.awt.Color;
@@ -26,10 +29,16 @@ public class TombolBerwarna extends JButton {
     private static final int PAD_X = 14;
     private static final int LEBAR_MINIMUM = 72;
 
+    /** Jarak antara ikon dan teks tombol. */
+    private static final int JARAK_IKON = 6;
+
     private final Color warnaDasar;
     private final Color warnaHover;
     private final Color warnaTekan;
     private final Gaya gaya;
+
+    /** Objek ikon yang terpasang, dipakai untuk memperbarui warnanya. */
+    private IkonDasar ikon;
 
     public TombolBerwarna(String teks, Color warnaDasar) {
         this(teks, warnaDasar, Gaya.TERISI);
@@ -51,6 +60,30 @@ public class TombolBerwarna extends JButton {
         setRolloverEnabled(true);
         setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         setBorder(BorderFactory.createEmptyBorder(0, PAD_X, 0, PAD_X));
+    }
+
+    /**
+     * Memasang ikon di sebelah kiri teks tombol. Warna ikon mengikuti warna
+     * teks tombol agar tetap kontras pada mode terang maupun gelap.
+     */
+    public TombolBerwarna denganIkon(JenisIkon jenis) {
+        ikon = jenis.buat(getForeground());
+        setIcon(ikon);
+        setIconTextGap(6);
+        return this;
+    }
+
+    private void perbaruiIkon() {
+        if (ikon == null) {
+            return;
+        }
+        ikon.setWarna(getForeground());
+    }
+
+    @Override
+    public void setForeground(Color warna) {
+        super.setForeground(warna);
+        perbaruiIkon();
     }
 
     @Override
@@ -96,7 +129,8 @@ public class TombolBerwarna extends JButton {
     private Dimension hitungUkuran() {
         FontMetrics metrik = getFontMetrics(getFont());
         int lebarTeks = metrik.stringWidth(getText() == null ? "" : getText());
-        int lebar = Math.max(LEBAR_MINIMUM, lebarTeks + PAD_X * 2);
+        int lebarIkon = ikon == null ? 0 : ikon.getIconWidth() + JARAK_IKON;
+        int lebar = Math.max(LEBAR_MINIMUM, lebarTeks + lebarIkon + PAD_X * 2);
         return new Dimension(lebar, TINGGI_TOMBOL);
     }
 

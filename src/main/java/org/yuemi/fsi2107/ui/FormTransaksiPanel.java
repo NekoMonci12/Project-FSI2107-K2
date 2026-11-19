@@ -4,6 +4,7 @@ import org.yuemi.fsi2107.model.JenisTransaksi;
 import org.yuemi.fsi2107.model.Kategori;
 import org.yuemi.fsi2107.model.Profile;
 import org.yuemi.fsi2107.service.BukuKas;
+import org.yuemi.fsi2107.ui.ikon.JenisIkon;
 
 import javax.swing.BorderFactory;
 import javax.swing.JComboBox;
@@ -59,7 +60,8 @@ public class FormTransaksiPanel extends JPanel {
         tambahBaris(gbc, baris++, "Nominal (Rp)", isianNominal, 1.0);
         tambahBaris(gbc, baris++, "Deskripsi", isianDeskripsi, 1.0);
 
-        TombolBerwarna tombolTambah = new TombolBerwarna("Tambah Transaksi", new Color(0x2E7D32));
+        TombolBerwarna tombolTambah = new TombolBerwarna("Tambah Transaksi", new Color(0x2E7D32))
+                .denganIkon(JenisIkon.TAMBAH);
         tombolTambah.addActionListener(e -> simpanTransaksi());
 
         TombolBerwarna tombolReset = new TombolBerwarna("Reset", new Color(0x607D8B),

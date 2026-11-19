@@ -3,6 +3,8 @@ package org.yuemi.fsi2107.ui;
 import org.yuemi.fsi2107.model.Profile;
 import org.yuemi.fsi2107.model.Transaksi;
 import org.yuemi.fsi2107.service.BukuKas;
+import org.yuemi.fsi2107.ui.ikon.IkonDasar;
+import org.yuemi.fsi2107.ui.ikon.JenisIkon;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -40,8 +42,10 @@ public class RingkasanPanel extends JPanel {
 
     private final JPanel barisKartu = new JPanel();
     private final JPanel kartuSaldo = buatKartu("SALDO SAAT INI", nilaiSaldo, WARNA_NETRAL);
-    private final JPanel kartuMasuk = buatKartu("TOTAL UANG MASUK", nilaiMasuk, WARNA_MASUK);
-    private final JPanel kartuKeluar = buatKartu("TOTAL UANG KELUAR", nilaiKeluar, WARNA_KELUAR);
+    private final JPanel kartuMasuk = buatKartu("TOTAL UANG MASUK", nilaiMasuk, WARNA_MASUK,
+            JenisIkon.UANG_MASUK);
+    private final JPanel kartuKeluar = buatKartu("TOTAL UANG KELUAR", nilaiKeluar, WARNA_KELUAR,
+            JenisIkon.UANG_KELUAR);
     private final JPanel kartuPpn = buatKartu("TOTAL PPN TERKUMPUL", nilaiPpn, WARNA_PAJAK);
     private final JPanel kartuPph = buatKartu("TOTAL PPH TERKUMPUL", nilaiPph, WARNA_PAJAK);
     private final JPanel selKeterangan = new JPanel(new BorderLayout(0, 2));
@@ -111,6 +115,13 @@ public class RingkasanPanel extends JPanel {
     }
 
     private static JPanel buatKartu(String judul, JLabel nilai, Color warnaJudul) {
+        return buatKartu(judul, nilai, warnaJudul, null);
+    }
+
+    /**
+     * Menyusun kartu ringkasan, dengan ikon opsional di sebelah kiri judul.
+     */
+    private static JPanel buatKartu(String judul, JLabel nilai, Color warnaJudul, JenisIkon ikon) {
         JPanel kartu = new JPanel();
         kartu.setLayout(new BoxLayout(kartu, BoxLayout.Y_AXIS));
         kartu.setBackground(Color.WHITE);
@@ -121,6 +132,10 @@ public class RingkasanPanel extends JPanel {
         JLabel labelJudul = new JLabel(judul);
         labelJudul.setFont(labelJudul.getFont().deriveFont(Font.BOLD, 11f));
         labelJudul.setForeground(warnaJudul);
+        if (ikon != null) {
+            labelJudul.setIcon(ikon.buat(warnaJudul));
+            labelJudul.setIconTextGap(6);
+        }
 
         kartu.add(labelJudul);
         kartu.add(Box.createRigidArea(new Dimension(0, 4)));
@@ -211,6 +226,9 @@ public class RingkasanPanel extends JPanel {
             judul.setForeground(new Color(0xB28A68));
         } else {
             judul.setForeground(new Color(0x9AA3B0));
+        }
+        if (judul.getIcon() instanceof IkonDasar ikon) {
+            ikon.setWarna(judul.getForeground());
         }
     }
 }

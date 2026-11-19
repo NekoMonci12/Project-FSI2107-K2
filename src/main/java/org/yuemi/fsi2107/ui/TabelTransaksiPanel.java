@@ -3,6 +3,7 @@ package org.yuemi.fsi2107.ui;
 import org.yuemi.fsi2107.model.Profile;
 import org.yuemi.fsi2107.model.Transaksi;
 import org.yuemi.fsi2107.service.BukuKas;
+import org.yuemi.fsi2107.ui.ikon.JenisIkon;
 
 import javax.swing.BorderFactory;
 import javax.swing.JOptionPane;
@@ -101,11 +102,12 @@ public class TabelTransaksiPanel extends JPanel {
 
         aturKolomPajak(true);
 
-        TombolBerwarna tombolHapus = new TombolBerwarna("Hapus Batch", new Color(0xC62828));
+        TombolBerwarna tombolHapus = new TombolBerwarna("Hapus Batch", new Color(0xC62828))
+                .denganIkon(JenisIkon.HAPUS);
         tombolHapus.addActionListener(e -> hapusTransaksiTerpilih());
 
         tombolPilihSemua = new TombolBerwarna("Pilih Semua", new Color(0x607D8B),
-                TombolBerwarna.Gaya.GARIS);
+                TombolBerwarna.Gaya.GARIS).denganIkon(JenisIkon.CEKLIS);
         tombolPilihSemua.addActionListener(e -> pilihSemuaTransaksi());
 
         JPanel panelKiri = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));

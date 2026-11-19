@@ -2,6 +2,8 @@ package org.yuemi.fsi2107.ui;
 
 import org.yuemi.fsi2107.model.Profile;
 import org.yuemi.fsi2107.service.ProfileService;
+import org.yuemi.fsi2107.ui.ikon.IkonDasar;
+import org.yuemi.fsi2107.ui.ikon.JenisIkon;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
@@ -34,14 +36,18 @@ public class ProfilPanel extends JPanel {
         setBorder(BorderFactory.createEmptyBorder(10, 14, 2, 14));
 
         labelProfil.setFont(labelProfil.getFont().deriveFont(Font.BOLD, 13f));
+        labelProfil.setIcon(JenisIkon.PROFIL.buat(TemaUI.warnaTeks()));
+        labelProfil.setIconTextGap(6);
 
         pilihanProfile.setPreferredSize(new Dimension(LEBAR_COMBO, 28));
         pilihanProfile.setMaximumRowCount(12);
 
-        TombolBerwarna tombolTambah = new TombolBerwarna("Tambah", new Color(0x1565C0));
+        TombolBerwarna tombolTambah = new TombolBerwarna("Tambah", new Color(0x1565C0))
+                .denganIkon(JenisIkon.TAMBAH);
         tombolTambah.addActionListener(e -> tambahProfile());
 
-        TombolBerwarna tombolHapus = new TombolBerwarna("Hapus", new Color(0xC62828));
+        TombolBerwarna tombolHapus = new TombolBerwarna("Hapus", new Color(0xC62828))
+                .denganIkon(JenisIkon.HAPUS);
         tombolHapus.addActionListener(e -> hapusProfile());
 
         add(labelProfil);
@@ -118,6 +124,9 @@ public class ProfilPanel extends JPanel {
 
     void aturModeGelap(boolean aktif) {
         labelProfil.setForeground(TemaUI.warnaTeks());
+        if (labelProfil.getIcon() instanceof IkonDasar ikon) {
+            ikon.setWarna(TemaUI.warnaTeks());
+        }
         TemaUI.aturComboBox(pilihanProfile, aktif);
         repaint();
     }

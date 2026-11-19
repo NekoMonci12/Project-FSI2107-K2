@@ -1,5 +1,7 @@
 package org.yuemi.fsi2107.ui;
 
+import org.yuemi.fsi2107.ui.ikon.JenisIkon;
+
 import javax.swing.JToggleButton;
 import javax.swing.Icon;
 import javax.swing.Timer;
@@ -80,8 +82,8 @@ final class SakelarTema extends JToggleButton {
 
         // Ikon tujuan berada di sisi berlawanan dengan knob.
         Icon ikonTujuan = isSelected()
-                ? new IkonBulan(new Color(0xEAF1FF))
-                : new IkonMatahari(new Color(0x7A5B00));
+                ? JenisIkon.BULAN.buat()
+                : JenisIkon.MATAHARI.buat();
         int ukuranIkon = ikonTujuan.getIconWidth();
         int ikonX = isSelected() ? 6 : lebar - ukuranIkon - 6;
         int ikonY = (tinggi - ikonTujuan.getIconHeight()) / 2;

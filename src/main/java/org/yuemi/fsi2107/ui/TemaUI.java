@@ -1,15 +1,15 @@
 package org.yuemi.fsi2107.ui;
 
+import org.yuemi.fsi2107.ui.ikon.JenisIkon;
+
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
-import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JList;
@@ -260,7 +260,8 @@ final class TemaUI {
                     protected JButton createArrowButton() {
                         JButton tombolPanah = new JButton();
                         tombolPanah.setUI(new javax.swing.plaf.basic.BasicButtonUI());
-                        tombolPanah.setIcon(ikonPanah());
+                        tombolPanah.setIcon(JenisIkon.PANAH.buat(
+                                modeGelap ? new Color(0x8B929D) : new Color(0x546E7A)));
                         tombolPanah.setFocusable(false);
                         tombolPanah.setBorder(BorderFactory.createEmptyBorder());
                         tombolPanah.setContentAreaFilled(false);
@@ -376,30 +377,5 @@ final class TemaUI {
         tombol.setBorderPainted(false);
         tombol.setOpaque(false);
         return tombol;
-    }
-
-    private static Icon ikonPanah() {
-        return new Icon() {
-            @Override
-            public void paintIcon(Component komponen, Graphics graphics, int x, int y) {
-                Graphics2D g2 = (Graphics2D) graphics.create();
-                g2.setColor(modeGelap ? new Color(0x8B929D) : new Color(0x546E7A));
-                int tengah = x + getIconWidth() / 2;
-                int atas = y + getIconHeight() / 2 - 1;
-                g2.drawLine(tengah - 3, atas, tengah, atas + 3);
-                g2.drawLine(tengah, atas + 3, tengah + 3, atas);
-                g2.dispose();
-            }
-
-            @Override
-            public int getIconWidth() {
-                return 10;
-            }
-
-            @Override
-            public int getIconHeight() {
-                return 8;
-            }
-        };
     }
 }

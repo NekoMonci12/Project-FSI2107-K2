@@ -2,6 +2,7 @@ package org.yuemi.fsi2107.ui;
 
 import org.yuemi.fsi2107.model.Profile;
 import org.yuemi.fsi2107.service.ProfileService;
+import org.yuemi.fsi2107.ui.ikon.JenisIkon;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
@@ -76,7 +77,8 @@ public class TambahProfileDialog extends JDialog {
         gbc.weightx = 1;
         isi.add(panelTarif, gbc);
 
-        JButton tombolSimpan = new TombolBerwarna("Simpan", new Color(0x2E7D32));
+        JButton tombolSimpan = new TombolBerwarna("Simpan", new Color(0x2E7D32))
+                .denganIkon(JenisIkon.SIMPAN);
         tombolSimpan.addActionListener(e -> simpan());
 
         JButton tombolBatal = new TombolBerwarna("Batal", new Color(0x607D8B),
