@@ -13,6 +13,10 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JComponent;
 import javax.swing.border.TitledBorder;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
+import javax.swing.text.PlainDocument;
 import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
@@ -85,6 +89,7 @@ public class FormTransaksiPanel extends JPanel {
         pilihanJenis.addActionListener(e -> perbaruiPilihanKategori());
         perbaruiPilihanKategori();
 
+        pasangPemformatNominal();
         isianNominal.addActionListener(e -> simpanTransaksi());
         isianDeskripsi.addActionListener(e -> simpanTransaksi());
 
@@ -212,6 +217,55 @@ public class FormTransaksiPanel extends JPanel {
         isianNominal.setText("");
         isianDeskripsi.setText("");
         isianNominal.requestFocusInWindow();
+    }
+
+    private void pasangPemformatNominal() {
+        PlainDocument dokumen = (PlainDocument) isianNominal.getDocument();
+        dokumen.setDocumentFilter(new DocumentFilter() {
+            @Override
+            public void insertString(FilterBypass lewat, int offset, String teks, AttributeSet atribut)
+                    throws BadLocationException {
+                String teksBaru = lewat.getDocument().getText(0, lewat.getDocument().getLength());
+                teksBaru = teksBaru.substring(0, offset) + teks + teksBaru.substring(offset);
+                terapkanTeksNominal(lewat, teksBaru, atribut);
+            }
+
+            @Override
+            public void replace(FilterBypass lewat, int offset, int panjang, String teks, AttributeSet atribut)
+                    throws BadLocationException {
+                String teksBaru = lewat.getDocument().getText(0, lewat.getDocument().getLength());
+                teksBaru = teksBaru.substring(0, offset) + teks + teksBaru.substring(offset + panjang);
+                terapkanTeksNominal(lewat, teksBaru, atribut);
+            }
+
+            @Override
+            public void remove(FilterBypass lewat, int offset, int panjang) throws BadLocationException {
+                String teksBaru = lewat.getDocument().getText(0, lewat.getDocument().getLength());
+                teksBaru = teksBaru.substring(0, offset) + teksBaru.substring(offset + panjang);
+                terapkanTeksNominal(lewat, teksBaru, null);
+            }
+        });
+    }
+
+    private static void terapkanTeksNominal(DocumentFilter.FilterBypass lewat, String teks,
+                                             AttributeSet atribut) throws BadLocationException {
+        String angka = teks.replaceAll("[^0-9]", "");
+        int awal = 0;
+        while (awal < angka.length() - 1 && angka.charAt(awal) == '0') {
+            awal++;
+        }
+        if (awal > 0) {
+            angka = angka.substring(awal);
+        }
+
+        StringBuilder hasil = new StringBuilder();
+        for (int i = 0; i < angka.length(); i++) {
+            if (i > 0 && (angka.length() - i) % 3 == 0) {
+                hasil.append('.');
+            }
+            hasil.append(angka.charAt(i));
+        }
+        lewat.replace(0, lewat.getDocument().getLength(), hasil.toString(), atribut);
     }
 
     private void tampilkanPeringatan(String pesan) {
