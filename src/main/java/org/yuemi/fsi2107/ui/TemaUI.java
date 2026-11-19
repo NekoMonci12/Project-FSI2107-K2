@@ -402,4 +402,8 @@ final class TemaUI {
             }
         };
     }
+
+    static void aturKomponen(Component komponen) {
+        aturKomponenDialog(komponen);
+    }
 }

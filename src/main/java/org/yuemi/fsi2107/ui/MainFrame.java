@@ -13,6 +13,7 @@ import javax.swing.UIManager;
 import javax.swing.plaf.basic.BasicSplitPaneDivider;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
@@ -39,7 +40,8 @@ public class MainFrame extends JFrame {
     private final JPanel isi;
     private final SakelarTema tombolTema;
 
-    public MainFrame(BukuKas bukuKas, ProfileService profileService) {
+    public MainFrame(BukuKas bukuKas, ProfileService profileService,
+                     org.yuemi.fsi2107.service.KategoriService kategoriService) {
         super("Aplikasi Pencatatan Keuangan - Uang Masuk & Uang Keluar");
         this.bukuKas = bukuKas;
 
@@ -49,7 +51,7 @@ public class MainFrame extends JFrame {
 
         ringkasanPanel = new RingkasanPanel();
         tabelTransaksiPanel = new TabelTransaksiPanel(bukuKas);
-        formTransaksiPanel = new FormTransaksiPanel(bukuKas);
+        formTransaksiPanel = new FormTransaksiPanel(bukuKas, kategoriService);
         profilPanel = new ProfilPanel(profileService);
 
         pemisah = new JSplitPane(JSplitPane.VERTICAL_SPLIT, formTransaksiPanel, tabelTransaksiPanel);
@@ -68,6 +70,9 @@ public class MainFrame extends JFrame {
         JPanel sisiTema = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         sisiTema.setOpaque(false);
         sisiTema.setBorder(BorderFactory.createEmptyBorder(8, 0, 0, 14));
+        TombolBerwarna tombolKategori = new TombolBerwarna("Kelola Kategori", new Color(0x1565C0));
+        tombolKategori.addActionListener(e -> new KategoriDialog(this, kategoriService).setVisible(true));
+        sisiTema.add(tombolKategori);
         sisiTema.add(tombolTema);
         barisAtas.add(sisiTema, BorderLayout.EAST);
 
@@ -177,7 +182,8 @@ public class MainFrame extends JFrame {
      * Menyusun dan menampilkan jendela utama pada event dispatch thread
      * memakai tampilan bawaan sistem.
      */
-    public static void jalankan(BukuKas bukuKas, ProfileService profileService) {
+    public static void jalankan(BukuKas bukuKas, ProfileService profileService,
+                                org.yuemi.fsi2107.service.KategoriService kategoriService) {
         try {
             SwingUtilities.invokeAndWait(() -> {
                 try {
@@ -185,7 +191,7 @@ public class MainFrame extends JFrame {
                 } catch (Exception ignored) {
                     // Tampilan bawaan Java tetap dipakai bila tema sistem tidak tersedia.
                 }
-                new MainFrame(bukuKas, profileService).setVisible(true);
+                new MainFrame(bukuKas, profileService, kategoriService).setVisible(true);
             });
         } catch (Exception ex) {
             throw new IllegalStateException("Gagal menjalankan jendela utama aplikasi.", ex);

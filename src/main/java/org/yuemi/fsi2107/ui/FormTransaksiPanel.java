@@ -37,7 +37,8 @@ public class FormTransaksiPanel extends JPanel {
     private final JTextField isianDeskripsi = new JTextField();
     private final JLabel infoProfil = new JLabel(" ");
 
-    public FormTransaksiPanel(BukuKas bukuKas) {
+    public FormTransaksiPanel(BukuKas bukuKas,
+                              org.yuemi.fsi2107.service.KategoriService kategoriService) {
         this.bukuKas = bukuKas;
 
         setLayout(new GridBagLayout());
@@ -86,8 +87,9 @@ public class FormTransaksiPanel extends JPanel {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         add(infoProfil, gbc);
 
-        pilihanJenis.addActionListener(e -> perbaruiPilihanKategori());
-        perbaruiPilihanKategori();
+        pilihanJenis.addActionListener(e -> perbaruiPilihanKategori(kategoriService));
+        kategoriService.tambahPendengar(layanan -> perbaruiPilihanKategori(layanan));
+        perbaruiPilihanKategori(kategoriService);
 
         pasangPemformatNominal();
         isianNominal.addActionListener(e -> simpanTransaksi());
@@ -135,14 +137,11 @@ public class FormTransaksiPanel extends JPanel {
     /**
      * Menyaring daftar kategori agar sesuai dengan jenis transaksi yang sedang dipilih.
      */
-    private void perbaruiPilihanKategori() {
+    private void perbaruiPilihanKategori(org.yuemi.fsi2107.service.KategoriService layanan) {
         JenisTransaksi jenisTerpilih = (JenisTransaksi) pilihanJenis.getSelectedItem();
         pilihanKategori.removeAllItems();
-        if (jenisTerpilih == null) {
-            return;
-        }
-        List<Kategori> daftarKategori = Kategori.berdasarkanJenis(jenisTerpilih);
-        for (Kategori kategori : daftarKategori) {
+        if (jenisTerpilih == null) return;
+        for (Kategori kategori : layanan.berdasarkanJenis(jenisTerpilih)) {
             pilihanKategori.addItem(kategori);
         }
     }

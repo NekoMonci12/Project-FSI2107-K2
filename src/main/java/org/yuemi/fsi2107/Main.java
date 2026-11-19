@@ -20,9 +20,11 @@ public class Main {
         Penyimpanan penyimpanan = PabrikPenyimpanan.create(konfigurasi);
         BukuKas bukuKas = new BukuKas(penyimpanan);
         ProfileService profileService = new ProfileService(penyimpanan);
+        org.yuemi.fsi2107.service.KategoriService kategoriService =
+                new org.yuemi.fsi2107.service.KategoriService(penyimpanan);
 
         Runtime.getRuntime().addShutdownHook(new Thread(bukuKas::tutup, "penutup-penyimpanan"));
 
-        MainFrame.jalankan(bukuKas, profileService);
+        MainFrame.jalankan(bukuKas, profileService, kategoriService);
     }
 }

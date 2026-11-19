@@ -73,6 +73,11 @@ abstract class PenyimpananJdbc implements Penyimpanan {
     protected abstract String perintahBuatTabelProfile();
 
     /**
+     * Perintah SQL untuk membuat tabel kategori bila belum ada.
+     */
+    protected abstract String perintahBuatTabelKategori();
+
+    /**
      * Perintah SQL untuk menyisipkan satu profil.
      */
     protected abstract String perintahSisipProfile();
@@ -83,9 +88,19 @@ abstract class PenyimpananJdbc implements Penyimpanan {
     protected abstract String perintahSisipProfileBawaan();
 
     /**
+     * Perintah SQL untuk menyisipkan satu kategori.
+     */
+    protected abstract String perintahSisipKategori();
+
+    /**
      * Perintah SQL untuk membaca seluruh profil.
      */
     protected abstract String perintahPilihSemuaProfile();
+
+    /**
+     * Perintah SQL untuk membaca seluruh kategori.
+     */
+    protected abstract String perintahPilihSemuaKategori();
 
     /**
      * Perintah SQL untuk menyisipkan satu transaksi.
@@ -108,6 +123,11 @@ abstract class PenyimpananJdbc implements Penyimpanan {
     protected abstract String perintahHapusTransaksiProfile();
 
     /**
+     * Perintah SQL untuk menghapus satu kategori.
+     */
+    protected abstract String perintahHapusKategori();
+
+    /**
      * Perintah SQL untuk menambahkan kolom profil ke tabel transaksi lama.
      */
     protected abstract String perintahTambahKolomProfile();
@@ -121,6 +141,11 @@ abstract class PenyimpananJdbc implements Penyimpanan {
      * Perintah SQL untuk menambahkan kolom PPN ke tabel transaksi lama.
      */
     protected abstract String perintahTambahKolomPpn();
+
+    /**
+     * Perintah SQL untuk mengubah satu kategori.
+     */
+    protected abstract String perintahUbahKategori();
 
     /**
      * Memuat driver JDBC bila belum dimuat oleh JVM.
@@ -146,6 +171,14 @@ abstract class PenyimpananJdbc implements Penyimpanan {
         sisipkanProfileBawaanBilaPerlu();
         tambahKolomProfileBilaBelumAda();
         tambahKolomPajakBilaBelumAda();
+
+        try (Statement pernyataan = koneksi().createStatement()) {
+            pernyataan.executeUpdate(perintahBuatTabelKategori());
+        } catch (SQLException ex) {
+            throw new DataStorageException("Gagal menyiapkan tabel kategori. " + ex.getMessage(), ex);
+        }
+
+        sisipkanKategoriBawaanBilaPerlu();
     }
 
     /**
@@ -283,7 +316,7 @@ abstract class PenyimpananJdbc implements Penyimpanan {
             pernyataan.setLong(1, profileId);
             pernyataan.setString(2, waktu.toString());
             pernyataan.setString(3, jenis.name());
-            pernyataan.setString(4, kategori.name());
+            pernyataan.setString(4, kategori.getKode());
             pernyataan.setString(5, deskripsi == null ? "" : deskripsi);
             pernyataan.setLong(6, nominal);
             pernyataan.setLong(7, pph);
@@ -510,10 +543,94 @@ abstract class PenyimpananJdbc implements Penyimpanan {
     }
 
     private static Kategori bacaKategori(String nilai) {
-        try {
-            return Kategori.valueOf(nilai.trim().toUpperCase(Locale.ROOT));
-        } catch (IllegalArgumentException ex) {
-            throw new DataStorageException("Kategori transaksi tidak dikenali: " + nilai, ex);
+        Kategori kategori = Kategori.cariBerdasarkanKode(nilai);
+        if (kategori != null) return kategori;
+        kategori = Kategori.cariBerdasarkanLabel(nilai);
+        if (kategori != null) return kategori;
+        throw new DataStorageException("Kategori transaksi tidak dikenali: " + nilai);
+    }
+
+    private void sisipkanKategoriBawaanBilaPerlu() {
+        if (muatSemuaKategori().isEmpty()) {
+            String[][] bawaan = {
+                {"GAJI", "Gaji", "MASUK", "1"}, {"BONUS", "Bonus", "MASUK", "1"},
+                {"PENJUALAN", "Penjualan", "MASUK", "1"}, {"BUNGA", "Bunga", "MASUK", "1"},
+                {"MAKAN", "Makan", "KELUAR", "1"}, {"TRANSPORT", "Transport", "KELUAR", "1"},
+                {"BELANJA", "Belanja", "KELUAR", "1"}, {"TAGIHAN", "Tagihan", "KELUAR", "1"},
+                {"HIBURAN", "Hiburan", "KELUAR", "1"}, {"LAINNYA", "Lainnya", "KELUAR", "1"}
+            };
+            for (String[] item : bawaan) {
+                try (PreparedStatement pernyataan = koneksi().prepareStatement(perintahSisipKategori(), Statement.RETURN_GENERATED_KEYS)) {
+                    pernyataan.setString(1, item[0]); pernyataan.setString(2, item[1]);
+                    pernyataan.setString(3, item[2]); pernyataan.setBoolean(4, true);
+                    pernyataan.executeUpdate();
+                } catch (SQLException ex) {
+                    throw new DataStorageException("Gagal membuat kategori bawaan. " + ex.getMessage(), ex);
+                }
+            }
         }
+    }
+
+    @Override
+    public synchronized List<Kategori> muatSemuaKategori() {
+        List<Kategori> hasil = new ArrayList<>();
+        try (PreparedStatement pernyataan = koneksi().prepareStatement(perintahPilihSemuaKategori());
+             ResultSet baris = pernyataan.executeQuery()) {
+            while (baris.next()) {
+                hasil.add(new Kategori(baris.getLong("id"), baris.getString("kode"), baris.getString("label"),
+                        JenisTransaksi.valueOf(baris.getString("jenis")), baris.getBoolean("bawaan")));
+            }
+        } catch (SQLException ex) {
+            throw new DataStorageException("Gagal membaca kategori transaksi. " + ex.getMessage(), ex);
+        }
+        return hasil;
+    }
+
+    @Override
+    public synchronized Kategori simpanKategori(String label, JenisTransaksi jenis) {
+        String kode = buatKodeKategori(label);
+        try (PreparedStatement pernyataan = koneksi().prepareStatement(perintahSisipKategori(), Statement.RETURN_GENERATED_KEYS)) {
+            pernyataan.setString(1, kode); pernyataan.setString(2, label);
+            pernyataan.setString(3, jenis.name()); pernyataan.setBoolean(4, false);
+            pernyataan.executeUpdate();
+            return new Kategori(bacaIdBaru(pernyataan), kode, label, jenis, false);
+        } catch (SQLException ex) {
+            throw new DataStorageException("Gagal menyimpan kategori transaksi. " + ex.getMessage(), ex);
+        }
+    }
+
+    @Override
+    public synchronized Kategori ubahKategori(long id, String label, JenisTransaksi jenis) {
+        try (PreparedStatement pernyataan = koneksi().prepareStatement(perintahUbahKategori())) {
+            pernyataan.setString(1, label); pernyataan.setString(2, jenis.name()); pernyataan.setLong(3, id);
+            if (pernyataan.executeUpdate() == 0) throw new DataStorageException("Kategori tidak ditemukan.");
+            return new Kategori(id, buatKodeKategori(label), label, jenis, false);
+        } catch (SQLException ex) {
+            throw new DataStorageException("Gagal mengubah kategori transaksi. " + ex.getMessage(), ex);
+        }
+    }
+
+    @Override
+    public synchronized boolean hapusKategori(long id) {
+        try (PreparedStatement cek = koneksi().prepareStatement("SELECT COUNT(*) FROM transaksi WHERE kategori = ?")) {
+            Kategori target = muatSemuaKategori().stream().filter(k -> k.getId() == id).findFirst().orElse(null);
+            if (target == null) return false;
+            cek.setString(1, target.getKode());
+            try (ResultSet hasil = cek.executeQuery()) { if (hasil.next() && hasil.getInt(1) > 0) return false; }
+        } catch (SQLException ex) {
+            throw new DataStorageException("Gagal memeriksa penggunaan kategori. " + ex.getMessage(), ex);
+        }
+        try (PreparedStatement pernyataan = koneksi().prepareStatement(perintahHapusKategori())) {
+            pernyataan.setLong(1, id); return pernyataan.executeUpdate() > 0;
+        } catch (SQLException ex) {
+            throw new DataStorageException("Gagal menghapus kategori transaksi. " + ex.getMessage(), ex);
+        }
+    }
+
+    private static String buatKodeKategori(String label) {
+        String kode = label.trim().toUpperCase(Locale.ROOT)
+                .replaceAll("[^A-Z0-9]+", "_").replaceAll("^_|_$", "");
+        if (kode.isEmpty()) kode = "KATEGORI";
+        return kode;
     }
 }
