@@ -88,9 +88,13 @@ public class TabelTransaksiPanel extends JPanel {
         TombolBerwarna tombolHapus = new TombolBerwarna("Hapus Transaksi Terpilih", new Color(0xC62828));
         tombolHapus.addActionListener(e -> hapusTransaksiTerpilih());
 
+        TombolBerwarna tombolHapusSemua = new TombolBerwarna("Hapus Semua Transaksi", new Color(0xB71C1C));
+        tombolHapusSemua.addActionListener(e -> hapusSemuaTransaksi());
+
         JPanel panelBawah = new JPanel(new BorderLayout(8, 0));
         panelBawah.setOpaque(false);
         panelBawah.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+        panelBawah.add(tombolHapusSemua, BorderLayout.WEST);
         panelBawah.add(tombolHapus, BorderLayout.EAST);
 
         scrollPane = new JScrollPane(tabel);
@@ -187,6 +191,24 @@ public class TabelTransaksiPanel extends JPanel {
 
         if (jawaban == JOptionPane.YES_OPTION) {
             bukuKas.hapusTransaksi(transaksi.getId());
+        }
+    }
+
+    private void hapusSemuaTransaksi() {
+        int jumlahTransaksi = bukuKas.getJumlahTransaksi();
+        if (jumlahTransaksi == 0) {
+            JOptionPane.showMessageDialog(this,
+                    "Tidak ada transaksi yang dapat dihapus.",
+                    "Daftar Kosong", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
+        int jawaban = JOptionPane.showConfirmDialog(this,
+                "Hapus semua " + jumlahTransaksi + " transaksi pada profil aktif?",
+                "Konfirmasi Hapus Semua", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+
+        if (jawaban == JOptionPane.YES_OPTION) {
+            bukuKas.hapusSemuaTransaksi();
         }
     }
 

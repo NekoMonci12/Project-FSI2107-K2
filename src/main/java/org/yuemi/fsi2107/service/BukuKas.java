@@ -105,6 +105,21 @@ public class BukuKas {
     }
 
     /**
+     * Menghapus seluruh transaksi milik profil aktif.
+     */
+    public int hapusSemuaTransaksi() {
+        if (profilAktif == null) {
+            throw new IllegalStateException("Belum ada profil aktif yang dipilih.");
+        }
+        int jumlahTerhapus = penyimpanan.hapusSemua(profilAktif.getId());
+        if (jumlahTerhapus > 0) {
+            daftarTransaksi.clear();
+            beriTahuPendengar();
+        }
+        return jumlahTerhapus;
+    }
+
+    /**
      * Mengisi daftar transaksi dari penyimpanan.
      */
     private void muatDariPenyimpanan() {

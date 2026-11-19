@@ -350,6 +350,18 @@ abstract class PenyimpananJdbc implements Penyimpanan {
     }
 
     @Override
+    public int hapusSemua(long profileId) {
+        try (PreparedStatement pernyataan = koneksi().prepareStatement(
+                perintahHapusTransaksiProfile())) {
+            pernyataan.setLong(1, profileId);
+            return pernyataan.executeUpdate();
+        } catch (SQLException ex) {
+            throw new DataStorageException("Gagal menghapus seluruh transaksi dari basis data. "
+                    + ex.getMessage(), ex);
+        }
+    }
+
+    @Override
     public boolean hapusProfile(long id) {
         Connection koneksiAktif = koneksi();
         boolean autoCommitAwal = true;

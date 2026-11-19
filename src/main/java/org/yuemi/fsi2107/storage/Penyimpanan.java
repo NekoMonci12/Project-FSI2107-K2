@@ -55,6 +55,12 @@ public interface Penyimpanan extends AutoCloseable {
     boolean hapus(long id);
 
     /**
+     * Menghapus seluruh transaksi milik sebuah profil dan mengembalikan
+     * jumlah baris yang berhasil dihapus.
+     */
+    int hapusSemua(long profileId);
+
+    /**
      * Menghapus sebuah profil beserta seluruh transaksinya.
      * Mengembalikan {@code true} bila ada profil yang terhapus.
      */
