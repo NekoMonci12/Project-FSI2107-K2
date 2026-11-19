@@ -10,21 +10,21 @@ import org.yuemi.fsi2107.ui.MainFrame;
 /**
  * Titik masuk aplikasi pencatatan keuangan.
  *
- * <p>Data transaksi dan profil disimpan pada basis data SQLite secara bawaan,
- * atau pada MySQL bila dipilih melalui {@code config.properties}.</p>
+ * <p>Data transaksi dan profil disimpan pada basis data SQLite secara bawaan, atau pada MySQL bila
+ * dipilih melalui {@code config.properties}.
  */
 public class Main {
 
-    public static void main(String[] args) {
-        KonfigurasiAplikasi konfigurasi = KonfigurasiAplikasi.muat();
-        Penyimpanan penyimpanan = PabrikPenyimpanan.create(konfigurasi);
-        BukuKas bukuKas = new BukuKas(penyimpanan);
-        ProfileService profileService = new ProfileService(penyimpanan);
-        org.yuemi.fsi2107.service.KategoriService kategoriService =
-                new org.yuemi.fsi2107.service.KategoriService(penyimpanan);
+  public static void main(String[] args) {
+    KonfigurasiAplikasi konfigurasi = KonfigurasiAplikasi.muat();
+    Penyimpanan penyimpanan = PabrikPenyimpanan.create(konfigurasi);
+    BukuKas bukuKas = new BukuKas(penyimpanan);
+    ProfileService profileService = new ProfileService(penyimpanan);
+    org.yuemi.fsi2107.service.KategoriService kategoriService =
+        new org.yuemi.fsi2107.service.KategoriService(penyimpanan);
 
-        Runtime.getRuntime().addShutdownHook(new Thread(bukuKas::tutup, "penutup-penyimpanan"));
+    Runtime.getRuntime().addShutdownHook(new Thread(bukuKas::tutup, "penutup-penyimpanan"));
 
-        MainFrame.jalankan(bukuKas, profileService, kategoriService);
-    }
+    MainFrame.jalankan(bukuKas, profileService, kategoriService);
+  }
 }

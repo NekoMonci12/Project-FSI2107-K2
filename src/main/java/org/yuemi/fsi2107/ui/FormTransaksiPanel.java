@@ -1,307 +1,310 @@
 package org.yuemi.fsi2107.ui;
 
+import java.awt.Color;
+import java.awt.FlowLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import javax.swing.BorderFactory;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.border.TitledBorder;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
+import javax.swing.text.PlainDocument;
 import org.yuemi.fsi2107.model.JenisTransaksi;
 import org.yuemi.fsi2107.model.Kategori;
 import org.yuemi.fsi2107.model.Profile;
 import org.yuemi.fsi2107.service.BukuKas;
 import org.yuemi.fsi2107.ui.ikon.JenisIkon;
 
-import javax.swing.BorderFactory;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.JComponent;
-import javax.swing.border.TitledBorder;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.DocumentFilter;
-import javax.swing.text.PlainDocument;
-import java.awt.Color;
-import java.awt.FlowLayout;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import java.util.List;
-
-/**
- * Formulir untuk menambahkan transaksi baru ke buku kas.
- */
+/** Formulir untuk menambahkan transaksi baru ke buku kas. */
 public class FormTransaksiPanel extends JPanel {
 
-    private final BukuKas bukuKas;
+  private final BukuKas bukuKas;
 
-    private final JComboBox<JenisTransaksi> pilihanJenis = new JComboBox<>(JenisTransaksi.values());
-    private final JComboBox<Kategori> pilihanKategori = new JComboBox<>();
-    private final JTextField isianNominal = new JTextField();
-    private final JTextField isianDeskripsi = new JTextField();
-    private final JLabel infoProfil = new JLabel(" ");
+  private final JComboBox<JenisTransaksi> pilihanJenis = new JComboBox<>(JenisTransaksi.values());
+  private final JComboBox<Kategori> pilihanKategori = new JComboBox<>();
+  private final JTextField isianNominal = new JTextField();
+  private final JTextField isianDeskripsi = new JTextField();
+  private final JLabel infoProfil = new JLabel(" ");
 
-    public FormTransaksiPanel(BukuKas bukuKas,
-                              org.yuemi.fsi2107.service.KategoriService kategoriService) {
-        this.bukuKas = bukuKas;
+  public FormTransaksiPanel(
+      BukuKas bukuKas, org.yuemi.fsi2107.service.KategoriService kategoriService) {
+    this.bukuKas = bukuKas;
 
-        setLayout(new GridBagLayout());
-        setBackground(Color.WHITE);
-        setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createTitledBorder(
-                        BorderFactory.createLineBorder(new Color(0xCFD8DC)),
-                        " Tambah Transaksi "),
-                BorderFactory.createEmptyBorder(8, 12, 12, 12)));
+    setLayout(new GridBagLayout());
+    setBackground(Color.WHITE);
+    setBorder(
+        BorderFactory.createCompoundBorder(
+            BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(new Color(0xCFD8DC)), " Tambah Transaksi "),
+            BorderFactory.createEmptyBorder(8, 12, 12, 12)));
 
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(4, 4, 4, 4);
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+    GridBagConstraints gbc = new GridBagConstraints();
+    gbc.insets = new Insets(4, 4, 4, 4);
+    gbc.anchor = GridBagConstraints.WEST;
+    gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        int baris = 0;
-        tambahBaris(gbc, baris++, "Jenis", pilihanJenis, 1.0);
-        tambahBaris(gbc, baris++, "Kategori", pilihanKategori, 1.0);
-        tambahBaris(gbc, baris++, "Nominal (Rp)", isianNominal, 1.0);
-        tambahBaris(gbc, baris++, "Deskripsi", isianDeskripsi, 1.0);
+    int baris = 0;
+    tambahBaris(gbc, baris++, "Jenis", pilihanJenis, 1.0);
+    tambahBaris(gbc, baris++, "Kategori", pilihanKategori, 1.0);
+    tambahBaris(gbc, baris++, "Nominal (Rp)", isianNominal, 1.0);
+    tambahBaris(gbc, baris++, "Deskripsi", isianDeskripsi, 1.0);
 
-        TombolBerwarna tombolTambah = new TombolBerwarna("Tambah Transaksi", new Color(0x2E7D32))
-                .denganIkon(JenisIkon.TAMBAH);
-        tombolTambah.addActionListener(e -> simpanTransaksi());
+    TombolBerwarna tombolTambah =
+        new TombolBerwarna("Tambah Transaksi", new Color(0x2E7D32)).denganIkon(JenisIkon.TAMBAH);
+    tombolTambah.addActionListener(e -> simpanTransaksi());
 
-        TombolBerwarna tombolReset = new TombolBerwarna("Reset", new Color(0x607D8B),
-                TombolBerwarna.Gaya.GARIS);
-        tombolReset.addActionListener(e -> bersihkanForm());
+    TombolBerwarna tombolReset =
+        new TombolBerwarna("Reset", new Color(0x607D8B), TombolBerwarna.Gaya.GARIS);
+    tombolReset.addActionListener(e -> bersihkanForm());
 
-        JPanel panelTombol = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
-        panelTombol.setOpaque(false);
-        panelTombol.setBorder(BorderFactory.createEmptyBorder(6, 0, 0, 0));
-        panelTombol.add(tombolTambah);
-        panelTombol.add(tombolReset);
+    JPanel panelTombol = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+    panelTombol.setOpaque(false);
+    panelTombol.setBorder(BorderFactory.createEmptyBorder(6, 0, 0, 0));
+    panelTombol.add(tombolTambah);
+    panelTombol.add(tombolReset);
 
-        gbc.gridx = 0;
-        gbc.gridy = baris;
-        gbc.gridwidth = 2;
-        gbc.weightx = 0;
-        gbc.fill = GridBagConstraints.NONE;
-        gbc.anchor = GridBagConstraints.WEST;
-        add(panelTombol, gbc);
+    gbc.gridx = 0;
+    gbc.gridy = baris;
+    gbc.gridwidth = 2;
+    gbc.weightx = 0;
+    gbc.fill = GridBagConstraints.NONE;
+    gbc.anchor = GridBagConstraints.WEST;
+    add(panelTombol, gbc);
 
-        infoProfil.setFont(infoProfil.getFont().deriveFont(java.awt.Font.PLAIN, 12f));
-        infoProfil.setForeground(new Color(0x546E7A));
-        gbc.gridy = baris + 1;
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        add(infoProfil, gbc);
+    infoProfil.setFont(infoProfil.getFont().deriveFont(java.awt.Font.PLAIN, 12f));
+    infoProfil.setForeground(new Color(0x546E7A));
+    gbc.gridy = baris + 1;
+    gbc.fill = GridBagConstraints.HORIZONTAL;
+    add(infoProfil, gbc);
 
-        pilihanJenis.addActionListener(e -> perbaruiPilihanKategori(kategoriService));
-        kategoriService.tambahPendengar(layanan -> perbaruiPilihanKategori(layanan));
-        perbaruiPilihanKategori(kategoriService);
+    pilihanJenis.addActionListener(e -> perbaruiPilihanKategori(kategoriService));
+    kategoriService.tambahPendengar(layanan -> perbaruiPilihanKategori(layanan));
+    perbaruiPilihanKategori(kategoriService);
 
-        pasangPemformatNominal();
-        isianNominal.addActionListener(e -> simpanTransaksi());
-        isianDeskripsi.addActionListener(e -> simpanTransaksi());
+    pasangPemformatNominal();
+    isianNominal.addActionListener(e -> simpanTransaksi());
+    isianDeskripsi.addActionListener(e -> simpanTransaksi());
 
-        bukuKas.tambahPendengar(this::perbaruiInfoProfil);
-        perbaruiInfoProfil(bukuKas);
-        aturModeGelap(TemaUI.isModeGelap());
+    bukuKas.tambahPendengar(this::perbaruiInfoProfil);
+    perbaruiInfoProfil(bukuKas);
+    aturModeGelap(TemaUI.isModeGelap());
+  }
+
+  /**
+   * Menampilkan profil yang sedang aktif beserta setelan pajaknya, agar pengguna mengetahui pajak
+   * yang otomatis dipungut.
+   */
+  private void perbaruiInfoProfil(BukuKas bukuKas) {
+    Profile profil = bukuKas.getProfilAktif();
+    if (profil == null) {
+      infoProfil.setText(" ");
+      return;
+    }
+    String tarif = profil.keteranganTarif();
+    infoProfil.setText(
+        tarif.isEmpty()
+            ? "Profil aktif: " + profil.getNama()
+            : "Profil aktif: " + profil.getNama() + " (" + tarif + ")");
+  }
+
+  private void tambahBaris(
+      GridBagConstraints gbc, int baris, String label, java.awt.Component komponen, double bobotX) {
+    JLabel labelKomponen = new JLabel(label);
+    labelKomponen.setPreferredSize(new java.awt.Dimension(110, 24));
+
+    gbc.gridy = baris;
+    gbc.gridx = 0;
+    gbc.gridwidth = 1;
+    gbc.weightx = 0;
+    add(labelKomponen, gbc);
+
+    gbc.gridx = 1;
+    gbc.weightx = bobotX;
+    add(komponen, gbc);
+
+    gbc.weightx = 0;
+  }
+
+  /** Menyaring daftar kategori agar sesuai dengan jenis transaksi yang sedang dipilih. */
+  private void perbaruiPilihanKategori(org.yuemi.fsi2107.service.KategoriService layanan) {
+    JenisTransaksi jenisTerpilih = (JenisTransaksi) pilihanJenis.getSelectedItem();
+    pilihanKategori.removeAllItems();
+    if (jenisTerpilih == null) return;
+    for (Kategori kategori : layanan.berdasarkanJenis(jenisTerpilih)) {
+      pilihanKategori.addItem(kategori);
+    }
+  }
+
+  private void simpanTransaksi() {
+    JenisTransaksi jenis = (JenisTransaksi) pilihanJenis.getSelectedItem();
+    Kategori kategori = (Kategori) pilihanKategori.getSelectedItem();
+
+    if (jenis == null) {
+      tampilkanPeringatan("Silakan pilih jenis transaksi terlebih dahulu.");
+      return;
+    }
+    if (kategori == null) {
+      tampilkanPeringatan("Silakan pilih kategori transaksi terlebih dahulu.");
+      return;
     }
 
-    /**
-     * Menampilkan profil yang sedang aktif beserta setelan pajaknya, agar
-     * pengguna mengetahui pajak yang otomatis dipungut.
-     */
-    private void perbaruiInfoProfil(BukuKas bukuKas) {
-        Profile profil = bukuKas.getProfilAktif();
-        if (profil == null) {
-            infoProfil.setText(" ");
-            return;
-        }
-        String tarif = profil.keteranganTarif();
-        infoProfil.setText(tarif.isEmpty()
-                ? "Profil aktif: " + profil.getNama()
-                : "Profil aktif: " + profil.getNama() + " (" + tarif + ")");
+    long nominal;
+    try {
+      nominal = bacaNominal(isianNominal.getText());
+    } catch (IllegalArgumentException ex) {
+      tampilkanPeringatan(ex.getMessage());
+      isianNominal.requestFocusInWindow();
+      isianNominal.selectAll();
+      return;
     }
 
-    private void tambahBaris(GridBagConstraints gbc, int baris, String label, java.awt.Component komponen,
-                             double bobotX) {
-        JLabel labelKomponen = new JLabel(label);
-        labelKomponen.setPreferredSize(new java.awt.Dimension(110, 24));
-
-        gbc.gridy = baris;
-        gbc.gridx = 0;
-        gbc.gridwidth = 1;
-        gbc.weightx = 0;
-        add(labelKomponen, gbc);
-
-        gbc.gridx = 1;
-        gbc.weightx = bobotX;
-        add(komponen, gbc);
-
-        gbc.weightx = 0;
+    String deskripsi = isianDeskripsi.getText().trim();
+    if (deskripsi.isEmpty()) {
+      deskripsi = kategori.getLabel();
     }
 
-    /**
-     * Menyaring daftar kategori agar sesuai dengan jenis transaksi yang sedang dipilih.
-     */
-    private void perbaruiPilihanKategori(org.yuemi.fsi2107.service.KategoriService layanan) {
-        JenisTransaksi jenisTerpilih = (JenisTransaksi) pilihanJenis.getSelectedItem();
-        pilihanKategori.removeAllItems();
-        if (jenisTerpilih == null) return;
-        for (Kategori kategori : layanan.berdasarkanJenis(jenisTerpilih)) {
-            pilihanKategori.addItem(kategori);
-        }
+    bukuKas.tambahTransaksi(jenis, kategori, deskripsi, nominal);
+    bersihkanForm();
+  }
+
+  /**
+   * Membaca nominal dari teks yang diisi pengguna. Titik dibuang sebagai pemisah ribuan, koma
+   * diterima sebagai pemisah desimal lalu dibulatkan ke bawah.
+   */
+  private static long bacaNominal(String teks) {
+    String bersih =
+        teks == null
+            ? ""
+            : teks.trim().replace("Rp", "").replace("rp", "").replace(".", "").replace(" ", "");
+    if (bersih.isEmpty()) {
+      throw new IllegalArgumentException(
+          "Nominal belum diisi. Masukkan angka lebih besar dari nol.");
     }
-
-    private void simpanTransaksi() {
-        JenisTransaksi jenis = (JenisTransaksi) pilihanJenis.getSelectedItem();
-        Kategori kategori = (Kategori) pilihanKategori.getSelectedItem();
-
-        if (jenis == null) {
-            tampilkanPeringatan("Silakan pilih jenis transaksi terlebih dahulu.");
-            return;
-        }
-        if (kategori == null) {
-            tampilkanPeringatan("Silakan pilih kategori transaksi terlebih dahulu.");
-            return;
-        }
-
-        long nominal;
-        try {
-            nominal = bacaNominal(isianNominal.getText());
-        } catch (IllegalArgumentException ex) {
-            tampilkanPeringatan(ex.getMessage());
-            isianNominal.requestFocusInWindow();
-            isianNominal.selectAll();
-            return;
-        }
-
-        String deskripsi = isianDeskripsi.getText().trim();
-        if (deskripsi.isEmpty()) {
-            deskripsi = kategori.getLabel();
-        }
-
-        bukuKas.tambahTransaksi(jenis, kategori, deskripsi, nominal);
-        bersihkanForm();
+    if (bersih.startsWith("-")) {
+      throw new IllegalArgumentException("Nominal tidak boleh bernilai negatif.");
     }
-
-    /**
-     * Membaca nominal dari teks yang diisi pengguna. Titik dibuang sebagai pemisah ribuan,
-     * koma diterima sebagai pemisah desimal lalu dibulatkan ke bawah.
-     */
-    private static long bacaNominal(String teks) {
-        String bersih = teks == null ? "" : teks.trim()
-                .replace("Rp", "")
-                .replace("rp", "")
-                .replace(".", "")
-                .replace(" ", "");
-        if (bersih.isEmpty()) {
-            throw new IllegalArgumentException("Nominal belum diisi. Masukkan angka lebih besar dari nol.");
-        }
-        if (bersih.startsWith("-")) {
-            throw new IllegalArgumentException("Nominal tidak boleh bernilai negatif.");
-        }
-        if (bersih.contains(",")) {
-            int posisiKoma = bersih.indexOf(',');
-            bersih = bersih.substring(0, posisiKoma);
-        }
-        if (bersih.isEmpty()) {
-            throw new IllegalArgumentException("Nominal harus lebih besar dari nol.");
-        }
-        try {
-            long nilai = Long.parseLong(bersih);
-            if (nilai <= 0) {
-                throw new IllegalArgumentException("Nominal harus lebih besar dari nol.");
-            }
-            return nilai;
-        } catch (NumberFormatException ex) {
-            throw new IllegalArgumentException("Nominal harus berupa angka, contoh: 250000 atau 250.000");
-        }
+    if (bersih.contains(",")) {
+      int posisiKoma = bersih.indexOf(',');
+      bersih = bersih.substring(0, posisiKoma);
     }
-
-    private void bersihkanForm() {
-        isianNominal.setText("");
-        isianDeskripsi.setText("");
-        isianNominal.requestFocusInWindow();
+    if (bersih.isEmpty()) {
+      throw new IllegalArgumentException("Nominal harus lebih besar dari nol.");
     }
+    try {
+      long nilai = Long.parseLong(bersih);
+      if (nilai <= 0) {
+        throw new IllegalArgumentException("Nominal harus lebih besar dari nol.");
+      }
+      return nilai;
+    } catch (NumberFormatException ex) {
+      throw new IllegalArgumentException("Nominal harus berupa angka, contoh: 250000 atau 250.000");
+    }
+  }
 
-    private void pasangPemformatNominal() {
-        PlainDocument dokumen = (PlainDocument) isianNominal.getDocument();
-        dokumen.setDocumentFilter(new DocumentFilter() {
-            @Override
-            public void insertString(FilterBypass lewat, int offset, String teks, AttributeSet atribut)
-                    throws BadLocationException {
-                String teksBaru = lewat.getDocument().getText(0, lewat.getDocument().getLength());
-                teksBaru = teksBaru.substring(0, offset) + teks + teksBaru.substring(offset);
-                terapkanTeksNominal(lewat, teksBaru, atribut);
-            }
+  private void bersihkanForm() {
+    isianNominal.setText("");
+    isianDeskripsi.setText("");
+    isianNominal.requestFocusInWindow();
+  }
 
-            @Override
-            public void replace(FilterBypass lewat, int offset, int panjang, String teks, AttributeSet atribut)
-                    throws BadLocationException {
-                String teksBaru = lewat.getDocument().getText(0, lewat.getDocument().getLength());
-                teksBaru = teksBaru.substring(0, offset) + teks + teksBaru.substring(offset + panjang);
-                terapkanTeksNominal(lewat, teksBaru, atribut);
-            }
+  private void pasangPemformatNominal() {
+    PlainDocument dokumen = (PlainDocument) isianNominal.getDocument();
+    dokumen.setDocumentFilter(
+        new DocumentFilter() {
+          @Override
+          public void insertString(
+              FilterBypass lewat, int offset, String teks, AttributeSet atribut)
+              throws BadLocationException {
+            String teksBaru = lewat.getDocument().getText(0, lewat.getDocument().getLength());
+            teksBaru = teksBaru.substring(0, offset) + teks + teksBaru.substring(offset);
+            terapkanTeksNominal(lewat, teksBaru, atribut);
+          }
 
-            @Override
-            public void remove(FilterBypass lewat, int offset, int panjang) throws BadLocationException {
-                String teksBaru = lewat.getDocument().getText(0, lewat.getDocument().getLength());
-                teksBaru = teksBaru.substring(0, offset) + teksBaru.substring(offset + panjang);
-                terapkanTeksNominal(lewat, teksBaru, null);
-            }
+          @Override
+          public void replace(
+              FilterBypass lewat, int offset, int panjang, String teks, AttributeSet atribut)
+              throws BadLocationException {
+            String teksBaru = lewat.getDocument().getText(0, lewat.getDocument().getLength());
+            teksBaru = teksBaru.substring(0, offset) + teks + teksBaru.substring(offset + panjang);
+            terapkanTeksNominal(lewat, teksBaru, atribut);
+          }
+
+          @Override
+          public void remove(FilterBypass lewat, int offset, int panjang)
+              throws BadLocationException {
+            String teksBaru = lewat.getDocument().getText(0, lewat.getDocument().getLength());
+            teksBaru = teksBaru.substring(0, offset) + teksBaru.substring(offset + panjang);
+            terapkanTeksNominal(lewat, teksBaru, null);
+          }
         });
+  }
+
+  private static void terapkanTeksNominal(
+      DocumentFilter.FilterBypass lewat, String teks, AttributeSet atribut)
+      throws BadLocationException {
+    String angka = teks.replaceAll("[^0-9]", "");
+    int awal = 0;
+    while (awal < angka.length() - 1 && angka.charAt(awal) == '0') {
+      awal++;
+    }
+    if (awal > 0) {
+      angka = angka.substring(awal);
     }
 
-    private static void terapkanTeksNominal(DocumentFilter.FilterBypass lewat, String teks,
-                                             AttributeSet atribut) throws BadLocationException {
-        String angka = teks.replaceAll("[^0-9]", "");
-        int awal = 0;
-        while (awal < angka.length() - 1 && angka.charAt(awal) == '0') {
-            awal++;
-        }
-        if (awal > 0) {
-            angka = angka.substring(awal);
-        }
-
-        StringBuilder hasil = new StringBuilder();
-        for (int i = 0; i < angka.length(); i++) {
-            if (i > 0 && (angka.length() - i) % 3 == 0) {
-                hasil.append('.');
-            }
-            hasil.append(angka.charAt(i));
-        }
-        lewat.replace(0, lewat.getDocument().getLength(), hasil.toString(), atribut);
+    StringBuilder hasil = new StringBuilder();
+    for (int i = 0; i < angka.length(); i++) {
+      if (i > 0 && (angka.length() - i) % 3 == 0) {
+        hasil.append('.');
+      }
+      hasil.append(angka.charAt(i));
     }
+    lewat.replace(0, lewat.getDocument().getLength(), hasil.toString(), atribut);
+  }
 
-    private void tampilkanPeringatan(String pesan) {
-        TemaUI.tampilkanPesan(this, pesan, "Data Belum Lengkap", JOptionPane.WARNING_MESSAGE);
-    }
+  private void tampilkanPeringatan(String pesan) {
+    TemaUI.tampilkanPesan(this, pesan, "Data Belum Lengkap", JOptionPane.WARNING_MESSAGE);
+  }
 
-    void aturModeGelap(boolean aktif) {
-        setBackground(TemaUI.warnaPanel());
-        setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createTitledBorder(
-                        BorderFactory.createLineBorder(TemaUI.warnaGaris()),
-                        " Tambah Transaksi ", TitledBorder.LEADING, TitledBorder.TOP,
-                        null, TemaUI.warnaTeks()),
-                BorderFactory.createEmptyBorder(8, 12, 12, 12)));
-        for (java.awt.Component komponen : getComponents()) {
-            if (komponen instanceof JLabel label) {
-                label.setForeground(label == infoProfil
-                        ? TemaUI.warnaTeksSekunder() : TemaUI.warnaTeks());
-            }
-        }
-        TemaUI.aturComboBox(pilihanJenis, aktif, TemaUI::ikonJenisTransaksi);
-        TemaUI.aturComboBox(pilihanKategori, aktif, TemaUI::ikonKategori);
-        aturWarnaIsian(isianNominal, aktif);
-        aturWarnaIsian(isianDeskripsi, aktif);
-        repaint();
+  void aturModeGelap(boolean aktif) {
+    setBackground(TemaUI.warnaPanel());
+    setBorder(
+        BorderFactory.createCompoundBorder(
+            BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(TemaUI.warnaGaris()),
+                " Tambah Transaksi ",
+                TitledBorder.LEADING,
+                TitledBorder.TOP,
+                null,
+                TemaUI.warnaTeks()),
+            BorderFactory.createEmptyBorder(8, 12, 12, 12)));
+    for (java.awt.Component komponen : getComponents()) {
+      if (komponen instanceof JLabel label) {
+        label.setForeground(label == infoProfil ? TemaUI.warnaTeksSekunder() : TemaUI.warnaTeks());
+      }
     }
+    TemaUI.aturComboBox(pilihanJenis, aktif, TemaUI::ikonJenisTransaksi);
+    TemaUI.aturComboBox(pilihanKategori, aktif, TemaUI::ikonKategori);
+    aturWarnaIsian(isianNominal, aktif);
+    aturWarnaIsian(isianDeskripsi, aktif);
+    repaint();
+  }
 
-    private static void aturWarnaIsian(JComponent komponen, boolean aktif) {
-        if (komponen instanceof JComboBox<?> combo) {
-            TemaUI.aturComboBox(combo, aktif);
-        } else if (komponen instanceof JTextField teks) {
-            TemaUI.aturTextField(teks, aktif);
-        } else {
-            komponen.setBackground(TemaUI.warnaIsian());
-            komponen.setForeground(TemaUI.warnaTeks());
-        }
+  private static void aturWarnaIsian(JComponent komponen, boolean aktif) {
+    if (komponen instanceof JComboBox<?> combo) {
+      TemaUI.aturComboBox(combo, aktif);
+    } else if (komponen instanceof JTextField teks) {
+      TemaUI.aturTextField(teks, aktif);
+    } else {
+      komponen.setBackground(TemaUI.warnaIsian());
+      komponen.setForeground(TemaUI.warnaTeks());
     }
+  }
 }

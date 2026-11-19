@@ -2,6 +2,7 @@ name: Build Check
 
 on:
   push:
+  pull_request:
   workflow_dispatch:
 
 permissions:
@@ -22,6 +23,9 @@ jobs:
           distribution: temurin
           java-version: '21'
           cache: maven
+
+      - name: Check Format (fmt)
+        run: mvn -B -ntp fmt:check
 
       - name: Build Maven (compile + package)
         run: mvn -B -ntp clean package
