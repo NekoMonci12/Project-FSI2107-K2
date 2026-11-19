@@ -12,3 +12,9 @@
 | 4 | Raffi Aditya Putra | 09031382530165 | <img src="https://github.com/rada92-code.png" width="24" height="24" style="border-radius:50%;" align="center"> [@rada92-code](https://github.com/rada92-code) |
 | 5 | Raihan Farasyasa | 09031382530176 | <img src="https://github.com/raihanfrs16.png" width="24" height="24" style="border-radius:50%;" align="center"> [@raihanfrs16](https://github.com/raihanfrs16) |
 | 6 | Sherin Fahira | 09031182530019 | <img src="https://github.com/SernFa.png" width="24" height="24" style="border-radius:50%;" align="center"> [@SernFa](https://github.com/SernFa) |
+
+### Contributors
+
+<a href="https://github.com/NekoMonci12/Project-FSI2107-K2/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=NekoMonci12/Project-FSI2107-K2" />
+</a>
