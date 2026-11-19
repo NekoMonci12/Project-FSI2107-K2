@@ -6,17 +6,15 @@ import org.yuemi.fsi2107.service.ProfileService;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JFrame;
-import javax.swing.JToggleButton;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.plaf.basic.BasicSplitPaneDivider;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
-import javax.swing.plaf.basic.BasicToggleButtonUI;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
@@ -39,7 +37,7 @@ public class MainFrame extends JFrame {
     private final FormTransaksiPanel formTransaksiPanel;
     private final ProfilPanel profilPanel;
     private final JPanel isi;
-    private final JToggleButton tombolTema;
+    private final SakelarTema tombolTema;
 
     public MainFrame(BukuKas bukuKas, ProfileService profileService) {
         super("Aplikasi Pencatatan Keuangan - Uang Masuk & Uang Keluar");
@@ -65,17 +63,12 @@ public class MainFrame extends JFrame {
         barisAtas.setOpaque(false);
         barisAtas.add(profilPanel, BorderLayout.CENTER);
 
-        tombolTema = new JToggleButton("Mode gelap");
-        tombolTema.setFocusable(false);
-        tombolTema.setToolTipText("Alihkan tampilan terang atau gelap");
-        tombolTema.setUI(new BasicToggleButtonUI());
-        tombolTema.setContentAreaFilled(true);
-        tombolTema.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+        tombolTema = new SakelarTema(TemaUI.isModeGelap());
         tombolTema.addActionListener(e -> aturModeGelap(tombolTema.isSelected()));
-        JPanel sisiTema = new JPanel(new BorderLayout());
+        JPanel sisiTema = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         sisiTema.setOpaque(false);
         sisiTema.setBorder(BorderFactory.createEmptyBorder(8, 0, 0, 14));
-        sisiTema.add(tombolTema, BorderLayout.NORTH);
+        sisiTema.add(tombolTema);
         barisAtas.add(sisiTema, BorderLayout.EAST);
 
         JPanel bagianAtas = new JPanel();
@@ -140,11 +133,7 @@ public class MainFrame extends JFrame {
 
     private void aturModeGelap(boolean aktif) {
         TemaUI.setModeGelap(aktif);
-        tombolTema.setText(aktif ? "Mode terang" : "Mode gelap");
         tombolTema.setToolTipText(aktif ? "Kembali ke tampilan terang" : "Alihkan ke tampilan gelap");
-        tombolTema.setBackground(aktif ? new Color(0x20252D) : Color.WHITE);
-        tombolTema.setForeground(TemaUI.warnaTeks());
-        tombolTema.setOpaque(true);
         isi.setBackground(TemaUI.warnaLatar());
         getRootPane().setBackground(TemaUI.warnaLatar());
         pemisah.setBackground(TemaUI.warnaLatar());
