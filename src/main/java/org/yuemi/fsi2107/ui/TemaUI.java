@@ -305,6 +305,9 @@ final class TemaUI {
                         : warnaIsian());
                 setForeground(terpilih && !modeGelap
                         ? new Color(0x263238) : warnaTeks());
+                if (modeGelap) {
+                    setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 3));
+                }
                 return this;
             }
         });
