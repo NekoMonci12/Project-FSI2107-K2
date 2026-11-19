@@ -215,7 +215,7 @@ public class FormTransaksiPanel extends JPanel {
     }
 
     private void tampilkanPeringatan(String pesan) {
-        JOptionPane.showMessageDialog(this, pesan, "Data Belum Lengkap", JOptionPane.WARNING_MESSAGE);
+        TemaUI.tampilkanPesan(this, pesan, "Data Belum Lengkap", JOptionPane.WARNING_MESSAGE);
     }
 
     void aturModeGelap(boolean aktif) {

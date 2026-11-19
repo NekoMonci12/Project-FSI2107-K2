@@ -96,12 +96,12 @@ public class ProfilPanel extends JPanel {
     private void hapusProfile() {
         Profile terpilih = (Profile) pilihanProfile.getSelectedItem();
         if (terpilih == null) {
-            JOptionPane.showMessageDialog(this, "Belum ada profil yang dipilih.",
+            TemaUI.tampilkanPesan(this, "Belum ada profil yang dipilih.",
                     "Belum Ada Pilihan", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
 
-        int jawaban = JOptionPane.showConfirmDialog(this,
+        int jawaban = TemaUI.tampilkanKonfirmasi(this,
                 "Hapus profil \"" + terpilih.getNama() + "\" beserta seluruh transaksinya?",
                 "Konfirmasi Hapus", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
         if (jawaban != JOptionPane.YES_OPTION) {
@@ -111,7 +111,7 @@ public class ProfilPanel extends JPanel {
         try {
             profileService.hapusProfile(terpilih.getId());
         } catch (RuntimeException ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(),
+            TemaUI.tampilkanPesan(this, ex.getMessage(),
                     "Gagal Menghapus Profil", JOptionPane.ERROR_MESSAGE);
         }
     }

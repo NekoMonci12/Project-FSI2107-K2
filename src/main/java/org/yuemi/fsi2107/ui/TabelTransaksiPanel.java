@@ -169,7 +169,7 @@ public class TabelTransaksiPanel extends JPanel {
     private void hapusTransaksiTerpilih() {
         int baris = tabel.getSelectedRow();
         if (baris < 0) {
-            JOptionPane.showMessageDialog(this,
+            TemaUI.tampilkanPesan(this,
                     "Pilih salah satu baris transaksi yang ingin dihapus.",
                     "Belum Ada Pilihan", JOptionPane.INFORMATION_MESSAGE);
             return;
@@ -180,7 +180,7 @@ public class TabelTransaksiPanel extends JPanel {
         }
         Transaksi transaksi = transaksiTampil.get(baris);
 
-        int jawaban = JOptionPane.showConfirmDialog(this,
+        int jawaban = TemaUI.tampilkanKonfirmasi(this,
                 "Hapus transaksi \"" + transaksi.getDeskripsi() + "\" sebesar "
                         + transaksi.getNominalTerformat() + "?",
                 "Konfirmasi Hapus", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
