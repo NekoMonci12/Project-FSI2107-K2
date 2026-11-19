@@ -67,7 +67,7 @@ public class MainFrame extends JFrame {
 
         tombolTema = new SakelarTema(TemaUI.isModeGelap());
         tombolTema.addActionListener(e -> aturModeGelap(tombolTema.isSelected()));
-        JPanel sisiTema = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        JPanel sisiTema = new JPanel(new FlowLayout(FlowLayout.LEFT, 16, 0));
         sisiTema.setOpaque(false);
         sisiTema.setBorder(BorderFactory.createEmptyBorder(8, 0, 0, 14));
         TombolBerwarna tombolKategori = new TombolBerwarna("Kelola Kategori", new Color(0x1565C0));
