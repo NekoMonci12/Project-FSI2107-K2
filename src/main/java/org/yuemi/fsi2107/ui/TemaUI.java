@@ -378,4 +378,33 @@ final class TemaUI {
         tombol.setOpaque(false);
         return tombol;
     }
+
+    private static Icon ikonPanah() {
+        return new Icon() {
+            @Override
+            public void paintIcon(Component komponen, Graphics graphics, int x, int y) {
+                Graphics2D g2 = (Graphics2D) graphics.create();
+                g2.setColor(modeGelap ? new Color(0x8B929D) : new Color(0x546E7A));
+                int tengah = x + getIconWidth() / 2;
+                int atas = y + getIconHeight() / 2 - 1;
+                g2.drawLine(tengah - 3, atas, tengah, atas + 3);
+                g2.drawLine(tengah, atas + 3, tengah + 3, atas);
+                g2.dispose();
+            }
+
+            @Override
+            public int getIconWidth() {
+                return 10;
+            }
+
+            @Override
+            public int getIconHeight() {
+                return 8;
+            }
+        };
+    }
+
+    static void aturKomponen(Component komponen) {
+        aturKomponenDialog(komponen);
+    }
 }

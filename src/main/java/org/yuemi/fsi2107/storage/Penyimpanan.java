@@ -66,6 +66,18 @@ public interface Penyimpanan extends AutoCloseable {
      */
     boolean hapusProfile(long id);
 
+    /** Membaca seluruh kategori yang tersimpan. */
+    List<Kategori> muatSemuaKategori();
+
+    /** Menyimpan kategori baru. */
+    Kategori simpanKategori(String label, JenisTransaksi jenis);
+
+    /** Mengubah nama dan jenis kategori. */
+    Kategori ubahKategori(long id, String label, JenisTransaksi jenis);
+
+    /** Menghapus kategori bila tidak dipakai transaksi. */
+    boolean hapusKategori(long id);
+
     /**
      * Melepaskan seluruh sumber daya yang dipakai penyimpanan.
      */

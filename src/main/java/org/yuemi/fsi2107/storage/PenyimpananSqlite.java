@@ -35,6 +35,14 @@ public class PenyimpananSqlite extends PenyimpananJdbc {
                     + "tarif_pph DECIMAL(5,2), "
                     + "tarif_ppn DECIMAL(5,2))";
 
+    private static final String BUAT_TABEL_KATEGORI =
+            "CREATE TABLE IF NOT EXISTS kategori ("
+                    + "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                    + "kode VARCHAR(80) NOT NULL UNIQUE, "
+                    + "label VARCHAR(50) NOT NULL UNIQUE, "
+                    + "jenis VARCHAR(20) NOT NULL, "
+                    + "bawaan INTEGER NOT NULL DEFAULT 0)";
+
     private static final String INSERT_TRANSAKSI =
             "INSERT INTO transaksi (profile_id, waktu, jenis, kategori, deskripsi, nominal, pph, ppn) "
                     + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
@@ -47,6 +55,9 @@ public class PenyimpananSqlite extends PenyimpananJdbc {
             "INSERT INTO profile (id, tipe, nama, catatan, dibuat_pada) "
                     + "VALUES (1, 'UMUM', ?, ?, ?)";
 
+    private static final String SISIP_KATEGORI =
+            "INSERT INTO kategori (kode, label, jenis, bawaan) VALUES (?, ?, ?, ?)";
+
     private static final String PILIH_SEMUA_TRANSAKSI =
             "SELECT id, profile_id, waktu, jenis, kategori, deskripsi, nominal, pph, ppn "
                     + "FROM transaksi WHERE profile_id = ? ORDER BY id";
@@ -55,11 +66,20 @@ public class PenyimpananSqlite extends PenyimpananJdbc {
             "SELECT id, tipe, nama, catatan, dibuat_pada, tarif_pph, tarif_ppn "
                     + "FROM profile ORDER BY id";
 
+    private static final String PILIH_SEMUA_KATEGORI =
+            "SELECT id, kode, label, jenis, bawaan FROM kategori ORDER BY id";
+
+    private static final String UBAH_KATEGORI =
+            "UPDATE kategori SET label = ?, jenis = ? WHERE id = ?";
+
     private static final String HAPUS_PROFILE =
             "DELETE FROM profile WHERE id = ?";
 
     private static final String HAPUS_TRANSAKSI_PROFILE =
             "DELETE FROM transaksi WHERE profile_id = ?";
+
+    private static final String HAPUS_KATEGORI =
+            "DELETE FROM kategori WHERE id = ?";
 
     private static final String TAMBAH_KOLOM_PROFILE =
             "ALTER TABLE transaksi ADD COLUMN profile_id INTEGER NOT NULL DEFAULT 1";
@@ -156,5 +176,30 @@ public class PenyimpananSqlite extends PenyimpananJdbc {
     @Override
     protected String perintahTambahKolomPpn() {
         return TAMBAH_KOLOM_PPN;
+    }
+
+    @Override
+    protected String perintahBuatTabelKategori() {
+        return BUAT_TABEL_KATEGORI;
+    }
+
+    @Override
+    protected String perintahSisipKategori() {
+        return SISIP_KATEGORI;
+    }
+
+    @Override
+    protected String perintahPilihSemuaKategori() {
+        return PILIH_SEMUA_KATEGORI;
+    }
+
+    @Override
+    protected String perintahUbahKategori() {
+        return UBAH_KATEGORI;
+    }
+
+    @Override
+    protected String perintahHapusKategori() {
+        return HAPUS_KATEGORI;
     }
 }
