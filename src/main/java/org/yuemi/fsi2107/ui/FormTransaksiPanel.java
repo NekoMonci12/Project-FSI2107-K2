@@ -287,8 +287,8 @@ public class FormTransaksiPanel extends JPanel {
                         ? TemaUI.warnaTeksSekunder() : TemaUI.warnaTeks());
             }
         }
-        aturWarnaIsian(pilihanJenis, aktif);
-        aturWarnaIsian(pilihanKategori, aktif);
+        TemaUI.aturComboBox(pilihanJenis, aktif, TemaUI::ikonJenisTransaksi);
+        TemaUI.aturComboBox(pilihanKategori, aktif, TemaUI::ikonKategori);
         aturWarnaIsian(isianNominal, aktif);
         aturWarnaIsian(isianDeskripsi, aktif);
         repaint();

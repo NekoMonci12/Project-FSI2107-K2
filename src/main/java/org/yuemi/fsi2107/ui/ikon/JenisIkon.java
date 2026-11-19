@@ -26,6 +26,30 @@ public enum JenisIkon {
         }
     },
 
+    /** Ikon label kategori untuk penanda kelompok data. */
+    KATEGORI {
+        @Override
+        public IkonDasar buat(Color warna) {
+            return new IkonKategori(warna);
+        }
+    },
+
+    /** Ikon pensil untuk tombol ubah data. */
+    UBAH {
+        @Override
+        public IkonDasar buat(Color warna) {
+            return new IkonUbah(warna);
+        }
+    },
+
+    /** Ikon silang untuk tombol tutup. */
+    TUTUP {
+        @Override
+        public IkonDasar buat(Color warna) {
+            return new IkonTutup(warna);
+        }
+    },
+
     /** Ikon penambah data. */
     TAMBAH {
         @Override

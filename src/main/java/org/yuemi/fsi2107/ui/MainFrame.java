@@ -2,6 +2,7 @@ package org.yuemi.fsi2107.ui;
 
 import org.yuemi.fsi2107.service.BukuKas;
 import org.yuemi.fsi2107.service.ProfileService;
+import org.yuemi.fsi2107.ui.ikon.JenisIkon;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -70,7 +71,8 @@ public class MainFrame extends JFrame {
         JPanel sisiTema = new JPanel(new FlowLayout(FlowLayout.LEFT, 16, 0));
         sisiTema.setOpaque(false);
         sisiTema.setBorder(BorderFactory.createEmptyBorder(8, 0, 0, 14));
-        TombolBerwarna tombolKategori = new TombolBerwarna("Kelola Kategori", new Color(0x1565C0));
+        TombolBerwarna tombolKategori = new TombolBerwarna("Kelola Kategori", new Color(0x1565C0))
+                .denganIkon(JenisIkon.KATEGORI);
         tombolKategori.addActionListener(e -> new KategoriDialog(this, kategoriService).setVisible(true));
         sisiTema.add(tombolKategori);
         sisiTema.add(tombolTema);

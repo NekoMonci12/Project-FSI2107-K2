@@ -1,5 +1,7 @@
 package org.yuemi.fsi2107.ui;
 
+import org.yuemi.fsi2107.model.JenisTransaksi;
+import org.yuemi.fsi2107.model.Kategori;
 import org.yuemi.fsi2107.ui.ikon.JenisIkon;
 
 import java.awt.Color;
@@ -8,6 +10,7 @@ import java.awt.Container;
 import java.awt.Graphics;
 import java.awt.Rectangle;
 import javax.swing.BorderFactory;
+import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JButton;
@@ -29,7 +32,6 @@ import javax.swing.plaf.basic.ComboPopup;
 import javax.swing.plaf.basic.BasicOptionPaneUI;
 import javax.swing.plaf.basic.BasicButtonUI;
 import javax.swing.plaf.basic.BasicScrollBarUI;
-import javax.swing.DefaultListCellRenderer;
 import java.awt.BorderLayout;
 import java.awt.Dialog;
 import java.awt.Window;
@@ -37,6 +39,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import javax.swing.AbstractAction;
 import javax.swing.KeyStroke;
+import java.util.function.Function;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -244,7 +247,48 @@ final class TemaUI {
         return modeGelap ? new Color(0x11151B) : Color.WHITE;
     }
 
+    /**
+     * Ikon untuk item combo box jenis transaksi.
+     *
+     * @param nilai item combo box, boleh null
+     * @return ikon sesuai jenis transaksi atau null bila nilainya bukan jenis transaksi
+     */
+    static Icon ikonJenisTransaksi(Object nilai) {
+        if (!(nilai instanceof JenisTransaksi jenis)) {
+            return null;
+        }
+        Color warna = jenis == JenisTransaksi.MASUK
+                ? new Color(0x2E7D32) : new Color(0xC62828);
+        return jenis == JenisTransaksi.MASUK
+                ? JenisIkon.UANG_MASUK.buat(warna) : JenisIkon.UANG_KELUAR.buat(warna);
+    }
+
+    /**
+     * Ikon untuk item combo box kategori transaksi.
+     *
+     * @param nilai item combo box, boleh null
+     * @return ikon label kategori atau null bila nilainya bukan kategori
+     */
+    static Icon ikonKategori(Object nilai) {
+        if (!(nilai instanceof Kategori)) {
+            return null;
+        }
+        return JenisIkon.KATEGORI.buat(modeGelap ? new Color(0x8B929D) : new Color(0x546E7A));
+    }
+
     static void aturComboBox(JComboBox<?> combo, boolean aktif) {
+        aturComboBox(combo, aktif, null);
+    }
+
+    /**
+     * Mengatur tampilan combo box sekaligus memasang renderer berikon.
+     *
+     * @param combo       combo box yang diatur
+     * @param aktif       true saat mode gelap aktif
+     * @param penyediaIkon fungsi penyedia ikon per item, null jika tanpa ikon
+     */
+    static void aturComboBox(JComboBox<?> combo, boolean aktif,
+                             Function<Object, Icon> penyediaIkon) {
         Object modeSebelumnya = combo.getClientProperty("tema.modeGelap");
         if (!(modeSebelumnya instanceof Boolean) || (Boolean) modeSebelumnya != aktif) {
             if (aktif) {
@@ -306,23 +350,7 @@ final class TemaUI {
         combo.setBackground(warnaIsian());
         combo.setForeground(warnaTeks());
         combo.setBorder(BorderFactory.createLineBorder(warnaGaris()));
-        combo.setRenderer(new DefaultListCellRenderer() {
-            @Override
-            public Component getListCellRendererComponent(JList<?> daftar, Object nilai, int indeks,
-                                                           boolean terpilih, boolean punyaFokus) {
-                super.getListCellRendererComponent(daftar, nilai, indeks, terpilih, punyaFokus);
-                setOpaque(true);
-                setBackground(terpilih
-                        ? (modeGelap ? new Color(0x252E3B) : new Color(0xBBDEFB))
-                        : warnaIsian());
-                setForeground(terpilih && !modeGelap
-                        ? new Color(0x263238) : warnaTeks());
-                if (modeGelap) {
-                    setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 3));
-                }
-                return this;
-            }
-        });
+        combo.setRenderer(new RendererIkon(penyediaIkon));
     }
 
     static void aturTextField(JTextField teks, boolean aktif) {

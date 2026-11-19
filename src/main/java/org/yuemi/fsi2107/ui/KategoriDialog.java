@@ -3,6 +3,7 @@ package org.yuemi.fsi2107.ui;
 import org.yuemi.fsi2107.model.JenisTransaksi;
 import org.yuemi.fsi2107.model.Kategori;
 import org.yuemi.fsi2107.service.KategoriService;
+import org.yuemi.fsi2107.ui.ikon.JenisIkon;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListModel;
@@ -44,11 +45,17 @@ public class KategoriDialog extends JDialog {
         form.add(new JLabel("Jenis:")); form.add(jenis);
         isi.add(form, BorderLayout.NORTH);
 
+        daftar.setCellRenderer(new RendererIkon(TemaUI::ikonKategori));
+
         JPanel tombol = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
-        TombolBerwarna tambah = new TombolBerwarna("Tambah", new Color(0x1565C0));
-        TombolBerwarna ubah = new TombolBerwarna("Ubah", new Color(0xEF6C00));
-        TombolBerwarna hapus = new TombolBerwarna("Hapus", new Color(0xC62828));
-        TombolBerwarna tutup = new TombolBerwarna("Tutup", new Color(0x607D8B), TombolBerwarna.Gaya.GARIS);
+        TombolBerwarna tambah = new TombolBerwarna("Tambah", new Color(0x1565C0))
+                .denganIkon(JenisIkon.TAMBAH);
+        TombolBerwarna ubah = new TombolBerwarna("Ubah", new Color(0xEF6C00))
+                .denganIkon(JenisIkon.UBAH);
+        TombolBerwarna hapus = new TombolBerwarna("Hapus", new Color(0xC62828))
+                .denganIkon(JenisIkon.HAPUS);
+        TombolBerwarna tutup = new TombolBerwarna("Tutup", new Color(0x607D8B), TombolBerwarna.Gaya.GARIS)
+                .denganIkon(JenisIkon.TUTUP);
         tambah.addActionListener(e -> tambah()); ubah.addActionListener(e -> ubah());
         hapus.addActionListener(e -> hapus()); tutup.addActionListener(e -> dispose());
         tombol.add(tambah); tombol.add(ubah); tombol.add(hapus); tombol.add(tutup);
@@ -105,8 +112,11 @@ public class KategoriDialog extends JDialog {
     void aturModeGelap(boolean aktif) {
         getContentPane().setBackground(TemaUI.warnaPanel());
         TemaUI.aturKomponen(this);
-        TemaUI.aturComboBox(jenis, aktif);
+        TemaUI.aturComboBox(jenis, aktif, TemaUI::ikonJenisTransaksi);
         TemaUI.aturTextField(nama, aktif);
+        daftar.setCellRenderer(new RendererIkon(TemaUI::ikonKategori));
+        daftar.setBackground(TemaUI.warnaIsian());
+        daftar.setForeground(TemaUI.warnaTeks());
         repaint();
     }
 }
