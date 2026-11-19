@@ -37,19 +37,30 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import javax.swing.AbstractAction;
 import javax.swing.KeyStroke;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 
 /**
  * Palet warna bersama untuk mode terang dan gelap.
  */
 final class TemaUI {
 
-    private static boolean modeGelap;
+    private static final String KUNCI_MODE_GELAP = "modeGelap";
+    private static final Preferences PREFERENSI = Preferences.userNodeForPackage(TemaUI.class);
+    private static boolean modeGelap = PREFERENSI.getBoolean(KUNCI_MODE_GELAP, false);
 
     private TemaUI() {
     }
 
     static void setModeGelap(boolean aktif) {
         modeGelap = aktif;
+        PREFERENSI.putBoolean(KUNCI_MODE_GELAP, aktif);
+        try {
+            PREFERENSI.flush();
+        } catch (BackingStoreException ex) {
+            System.err.println("Peringatan: preferensi mode tampilan gagal disimpan. "
+                    + ex.getMessage());
+        }
         UIManager.put("OptionPane.background", warnaPanel());
         UIManager.put("OptionPane.messageForeground", warnaTeks());
         UIManager.put("Panel.background", warnaPanel());

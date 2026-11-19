@@ -84,6 +84,7 @@ public class MainFrame extends JFrame {
 
         setContentPane(isi);
         setSize(920, 700);
+        aturModeGelap(TemaUI.isModeGelap());
 
         // Divider disesuaikan setiap kali jendela berubah ukuran agar tabel
         // transaksi selalu mendapat ruang minimum.
