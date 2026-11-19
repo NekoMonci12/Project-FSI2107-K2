@@ -48,6 +48,7 @@ public class RingkasanPanel extends JPanel {
 
     /** Mode tata letak terakhir; {@code null} berarti belum pernah ditata. */
     private Boolean modePajak;
+    private long saldoSaatIni;
 
     public RingkasanPanel() {
         setLayout(new BorderLayout(0, 8));
@@ -71,6 +72,7 @@ public class RingkasanPanel extends JPanel {
 
         add(barisKartu, BorderLayout.CENTER);
         aturTataLetakKartu(false);
+        aturModeGelap(TemaUI.isModeGelap());
     }
 
     /**
@@ -135,6 +137,7 @@ public class RingkasanPanel extends JPanel {
         aturTataLetakKartu(adaPajak);
 
         long saldo = bukuKas.getSaldo();
+        saldoSaatIni = saldo;
         nilaiSaldo.setText(Transaksi.formatNominal(saldo));
         nilaiSaldo.setForeground(saldo < 0 ? WARNA_KELUAR : WARNA_MASUK);
 
@@ -166,5 +169,48 @@ public class RingkasanPanel extends JPanel {
         }
         List<String> baris = profil.infoTambahan();
         infoProfil.setText(baris.isEmpty() ? " " : String.join("   |   ", baris));
+    }
+
+    void aturModeGelap(boolean aktif) {
+        Color warnaKartu = TemaUI.warnaKartu();
+        Color warnaTeks = TemaUI.warnaTeks();
+        for (JPanel kartu : List.of(kartuSaldo, kartuMasuk, kartuKeluar, kartuPpn, kartuPph)) {
+            kartu.setBackground(warnaKartu);
+            kartu.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(TemaUI.warnaGaris()),
+                    BorderFactory.createEmptyBorder(8, 12, 8, 12)));
+        }
+        nilaiSaldo.setForeground(saldoSaatIni < 0 ? WARNA_KELUAR : WARNA_MASUK);
+        nilaiMasuk.setForeground(warnaTeks);
+        nilaiKeluar.setForeground(warnaTeks);
+        nilaiPpn.setForeground(warnaTeks);
+        nilaiPph.setForeground(warnaTeks);
+        aturWarnaJudul(kartuSaldo, WARNA_NETRAL, aktif);
+        aturWarnaJudul(kartuMasuk, WARNA_MASUK, aktif);
+        aturWarnaJudul(kartuKeluar, WARNA_KELUAR, aktif);
+        aturWarnaJudul(kartuPpn, WARNA_PAJAK, aktif);
+        aturWarnaJudul(kartuPph, WARNA_PAJAK, aktif);
+        if (aktif) {
+            nilaiSaldo.setForeground(saldoSaatIni < 0
+                    ? new Color(0xC99A9D) : new Color(0x9AB99D));
+        }
+        infoJumlah.setForeground(TemaUI.warnaTeksSekunder());
+        infoProfil.setForeground(warnaTeks);
+        repaint();
+    }
+
+    private static void aturWarnaJudul(JPanel kartu, Color warna, boolean modeGelap) {
+        JLabel judul = (JLabel) kartu.getComponent(0);
+        if (!modeGelap) {
+            judul.setForeground(warna);
+        } else if (warna.equals(WARNA_MASUK)) {
+            judul.setForeground(new Color(0x75A17A));
+        } else if (warna.equals(WARNA_KELUAR)) {
+            judul.setForeground(new Color(0xBB777B));
+        } else if (warna.equals(WARNA_PAJAK)) {
+            judul.setForeground(new Color(0xB28A68));
+        } else {
+            judul.setForeground(new Color(0x9AA3B0));
+        }
     }
 }

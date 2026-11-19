@@ -10,9 +10,11 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableColumnModel;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -46,6 +48,8 @@ public class TabelTransaksiPanel extends JPanel {
     private final BukuKas bukuKas;
     private final DefaultTableModel modelTabel;
     private final JTable tabel;
+    private final JScrollPane scrollPane;
+    private final JPanel pojokHeader = new JPanel();
 
     /** Daftar transaksi yang sedang ditampilkan, sejajar indeks dengan baris tabel. */
     private List<Transaksi> transaksiTampil = new ArrayList<>();
@@ -74,9 +78,10 @@ public class TabelTransaksiPanel extends JPanel {
         tabel.setRowHeight(26);
         tabel.setFillsViewportHeight(true);
         tabel.setShowGrid(true);
-        tabel.setGridColor(new Color(0xE0E0E0));
+        tabel.setGridColor(TemaUI.warnaGaris());
         tabel.getTableHeader().setReorderingAllowed(false);
         tabel.setDefaultRenderer(Object.class, new PerenderBaris());
+        tabel.getTableHeader().setDefaultRenderer(new PerenderHeader());
 
         aturKolomPajak(true);
 
@@ -88,8 +93,10 @@ public class TabelTransaksiPanel extends JPanel {
         panelBawah.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
         panelBawah.add(tombolHapus, BorderLayout.EAST);
 
-        add(new JScrollPane(tabel), BorderLayout.CENTER);
+        scrollPane = new JScrollPane(tabel);
+        add(scrollPane, BorderLayout.CENTER);
         add(panelBawah, BorderLayout.SOUTH);
+        aturModeGelap(TemaUI.isModeGelap());
     }
 
     /**
@@ -183,6 +190,45 @@ public class TabelTransaksiPanel extends JPanel {
         }
     }
 
+    void aturModeGelap(boolean aktif) {
+        setBackground(TemaUI.warnaPanel());
+        setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(TemaUI.warnaGaris()),
+                " Daftar Transaksi ", TitledBorder.LEADING, TitledBorder.TOP,
+                null, TemaUI.warnaTeks()));
+        tabel.setBackground(TemaUI.warnaIsian());
+        tabel.setForeground(TemaUI.warnaTeks());
+        tabel.setSelectionBackground(aktif ? new Color(0x46536A) : new Color(0xBBDEFB));
+        tabel.setSelectionForeground(TemaUI.warnaTeks());
+        tabel.setGridColor(TemaUI.warnaGaris());
+        tabel.getTableHeader().setBackground(TemaUI.warnaPanel());
+        tabel.getTableHeader().setForeground(TemaUI.warnaTeks());
+        tabel.getTableHeader().setOpaque(true);
+        scrollPane.setBackground(TemaUI.warnaPanel());
+        scrollPane.setBorder(BorderFactory.createLineBorder(TemaUI.warnaGaris()));
+        scrollPane.getViewport().setBackground(TemaUI.warnaPanel());
+        TemaUI.aturScrollbarGelap(scrollPane.getVerticalScrollBar(), aktif);
+        TemaUI.aturScrollbarGelap(scrollPane.getHorizontalScrollBar(), aktif);
+        pojokHeader.setBackground(TemaUI.warnaPanel());
+        scrollPane.setCorner(JScrollPane.UPPER_RIGHT_CORNER, pojokHeader);
+        repaint();
+    }
+
+    private static class PerenderHeader extends DefaultTableCellRenderer {
+
+        @Override
+        public Component getTableCellRendererComponent(JTable tabel, Object nilai, boolean terpilih,
+                                                       boolean punyaFokus, int baris, int kolom) {
+            super.getTableCellRendererComponent(tabel, nilai, terpilih, punyaFokus, baris, kolom);
+            setOpaque(true);
+            setBackground(TemaUI.warnaPanel());
+            setForeground(TemaUI.warnaTeks());
+            setBorder(BorderFactory.createMatteBorder(0, 0, 1, 1, TemaUI.warnaGaris()));
+            setHorizontalAlignment(LEFT);
+            return this;
+        }
+    }
+
     /**
      * Mewarnai baris sesuai jenis transaksi: hijau untuk uang masuk, merah untuk uang keluar.
      */
@@ -200,6 +246,9 @@ public class TabelTransaksiPanel extends JPanel {
             if (terpilih) {
                 komponen.setBackground(tabel.getSelectionBackground());
                 komponen.setForeground(tabel.getSelectionForeground());
+            } else if (TemaUI.isModeGelap()) {
+                komponen.setBackground(masuk ? new Color(0x17251C) : new Color(0x29191C));
+                komponen.setForeground(masuk ? new Color(0x9AB99D) : new Color(0xC99A9D));
             } else {
                 komponen.setBackground(masuk ? WARNA_BARIS_MASUK : WARNA_BARIS_KELUAR);
                 komponen.setForeground(masuk ? WARNA_TEKS_MASUK : WARNA_TEKS_KELUAR);

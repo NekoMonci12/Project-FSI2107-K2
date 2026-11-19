@@ -92,6 +92,7 @@ public class TambahProfileDialog extends JDialog {
         add(panelTombol, BorderLayout.SOUTH);
 
         perbaruiTampilTarif();
+        aturModeGelap(TemaUI.isModeGelap());
         pack();
         setLocationRelativeTo(induk);
     }
@@ -168,5 +169,32 @@ public class TambahProfileDialog extends JDialog {
 
     private void tampilkanPeringatan(String pesan) {
         JOptionPane.showMessageDialog(this, pesan, "Data Belum Lengkap", JOptionPane.WARNING_MESSAGE);
+    }
+
+    private void aturModeGelap(boolean aktif) {
+        Color latar = TemaUI.warnaPanel();
+        for (JPanel panel : new JPanel[]{(JPanel) getContentPane(), panelTarif}) {
+            panel.setBackground(latar);
+            for (java.awt.Component komponen : panel.getComponents()) {
+                if (komponen instanceof JLabel label) {
+                    label.setForeground(TemaUI.warnaTeks());
+                } else if (komponen instanceof JTextField teks) {
+                    TemaUI.aturTextField(teks, aktif);
+                } else if (komponen instanceof JComboBox<?> combo) {
+                    TemaUI.aturComboBox(combo, aktif);
+                } else if (komponen instanceof JPanel panelAnak) {
+                    panelAnak.setBackground(latar);
+                    for (java.awt.Component anak : panelAnak.getComponents()) {
+                        if (anak instanceof JLabel label) {
+                            label.setForeground(TemaUI.warnaTeks());
+                        } else if (anak instanceof JTextField teks) {
+                            TemaUI.aturTextField(teks, aktif);
+                        }
+                    }
+                }
+            }
+        }
+        getContentPane().setBackground(latar);
+        repaint();
     }
 }

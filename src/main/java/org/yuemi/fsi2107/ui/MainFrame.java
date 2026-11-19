@@ -6,13 +6,18 @@ import org.yuemi.fsi2107.service.ProfileService;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JFrame;
+import javax.swing.JToggleButton;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.plaf.basic.BasicSplitPaneDivider;
+import javax.swing.plaf.basic.BasicSplitPaneUI;
+import javax.swing.plaf.basic.BasicToggleButtonUI;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
@@ -32,6 +37,9 @@ public class MainFrame extends JFrame {
     private final TabelTransaksiPanel tabelTransaksiPanel;
     private final JSplitPane pemisah;
     private final FormTransaksiPanel formTransaksiPanel;
+    private final ProfilPanel profilPanel;
+    private final JPanel isi;
+    private final JToggleButton tombolTema;
 
     public MainFrame(BukuKas bukuKas, ProfileService profileService) {
         super("Aplikasi Pencatatan Keuangan - Uang Masuk & Uang Keluar");
@@ -44,21 +52,40 @@ public class MainFrame extends JFrame {
         ringkasanPanel = new RingkasanPanel();
         tabelTransaksiPanel = new TabelTransaksiPanel(bukuKas);
         formTransaksiPanel = new FormTransaksiPanel(bukuKas);
-        ProfilPanel profilPanel = new ProfilPanel(profileService);
+        profilPanel = new ProfilPanel(profileService);
 
         pemisah = new JSplitPane(JSplitPane.VERTICAL_SPLIT, formTransaksiPanel, tabelTransaksiPanel);
         pemisah.setResizeWeight(0.0);
         pemisah.setBorder(BorderFactory.createEmptyBorder(0, 14, 14, 14));
         pemisah.setContinuousLayout(true);
+        pemisah.setOpaque(true);
+        pemisah.setBackground(TemaUI.warnaLatar());
+
+        JPanel barisAtas = new JPanel(new BorderLayout());
+        barisAtas.setOpaque(false);
+        barisAtas.add(profilPanel, BorderLayout.CENTER);
+
+        tombolTema = new JToggleButton("Mode gelap");
+        tombolTema.setFocusable(false);
+        tombolTema.setToolTipText("Alihkan tampilan terang atau gelap");
+        tombolTema.setUI(new BasicToggleButtonUI());
+        tombolTema.setContentAreaFilled(true);
+        tombolTema.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+        tombolTema.addActionListener(e -> aturModeGelap(tombolTema.isSelected()));
+        JPanel sisiTema = new JPanel(new BorderLayout());
+        sisiTema.setOpaque(false);
+        sisiTema.setBorder(BorderFactory.createEmptyBorder(8, 0, 0, 14));
+        sisiTema.add(tombolTema, BorderLayout.NORTH);
+        barisAtas.add(sisiTema, BorderLayout.EAST);
 
         JPanel bagianAtas = new JPanel();
         bagianAtas.setLayout(new BoxLayout(bagianAtas, BoxLayout.Y_AXIS));
         bagianAtas.setOpaque(false);
-        bagianAtas.add(profilPanel);
+        bagianAtas.add(barisAtas);
         bagianAtas.add(ringkasanPanel);
 
-        JPanel isi = new JPanel(new BorderLayout());
-        isi.setBackground(new Color(0xF5F7F8));
+        isi = new JPanel(new BorderLayout());
+        isi.setBackground(TemaUI.warnaLatar());
         isi.add(bagianAtas, BorderLayout.NORTH);
         isi.add(pemisah, BorderLayout.CENTER);
 
@@ -109,6 +136,39 @@ public class MainFrame extends JFrame {
     private void segarkanTampilan(BukuKas bukuKas) {
         ringkasanPanel.perbarui(bukuKas);
         tabelTransaksiPanel.perbarui(bukuKas);
+    }
+
+    private void aturModeGelap(boolean aktif) {
+        TemaUI.setModeGelap(aktif);
+        tombolTema.setText(aktif ? "Mode terang" : "Mode gelap");
+        tombolTema.setToolTipText(aktif ? "Kembali ke tampilan terang" : "Alihkan ke tampilan gelap");
+        tombolTema.setBackground(aktif ? new Color(0x20252D) : Color.WHITE);
+        tombolTema.setForeground(TemaUI.warnaTeks());
+        tombolTema.setOpaque(true);
+        isi.setBackground(TemaUI.warnaLatar());
+        getRootPane().setBackground(TemaUI.warnaLatar());
+        pemisah.setBackground(TemaUI.warnaLatar());
+        if (aktif) {
+            pemisah.setUI(new BasicSplitPaneUI() {
+                @Override
+                public BasicSplitPaneDivider createDefaultDivider() {
+                    return new BasicSplitPaneDivider(this) {
+                        @Override
+                        public void paint(Graphics graphics) {
+                            graphics.setColor(TemaUI.warnaLatar());
+                            graphics.fillRect(0, 0, getWidth(), getHeight());
+                        }
+                    };
+                }
+            });
+        } else {
+            pemisah.updateUI();
+        }
+        profilPanel.aturModeGelap(aktif);
+        ringkasanPanel.aturModeGelap(aktif);
+        formTransaksiPanel.aturModeGelap(aktif);
+        tabelTransaksiPanel.aturModeGelap(aktif);
+        isi.repaint();
     }
 
     /**

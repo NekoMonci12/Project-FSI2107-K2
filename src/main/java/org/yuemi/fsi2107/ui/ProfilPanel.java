@@ -24,6 +24,7 @@ public class ProfilPanel extends JPanel {
 
     private final ProfileService profileService;
     private final JComboBox<Profile> pilihanProfile = new JComboBox<>();
+    private final JLabel labelProfil = new JLabel("Profil:");
 
     public ProfilPanel(ProfileService profileService) {
         this.profileService = profileService;
@@ -32,8 +33,7 @@ public class ProfilPanel extends JPanel {
         setOpaque(false);
         setBorder(BorderFactory.createEmptyBorder(10, 14, 2, 14));
 
-        JLabel label = new JLabel("Profil:");
-        label.setFont(label.getFont().deriveFont(Font.BOLD, 13f));
+        labelProfil.setFont(labelProfil.getFont().deriveFont(Font.BOLD, 13f));
 
         pilihanProfile.setPreferredSize(new Dimension(LEBAR_COMBO, 28));
         pilihanProfile.setMaximumRowCount(12);
@@ -44,7 +44,7 @@ public class ProfilPanel extends JPanel {
         TombolBerwarna tombolHapus = new TombolBerwarna("Hapus", new Color(0xC62828));
         tombolHapus.addActionListener(e -> hapusProfile());
 
-        add(label);
+        add(labelProfil);
         add(pilihanProfile);
         add(tombolTambah);
         add(tombolHapus);
@@ -58,6 +58,7 @@ public class ProfilPanel extends JPanel {
 
         profileService.tambahPendengar(layanan -> segarkanDaftar());
         segarkanDaftar();
+        aturModeGelap(TemaUI.isModeGelap());
     }
 
     /**
@@ -113,5 +114,11 @@ public class ProfilPanel extends JPanel {
             JOptionPane.showMessageDialog(this, ex.getMessage(),
                     "Gagal Menghapus Profil", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    void aturModeGelap(boolean aktif) {
+        labelProfil.setForeground(TemaUI.warnaTeks());
+        TemaUI.aturComboBox(pilihanProfile, aktif);
+        repaint();
     }
 }

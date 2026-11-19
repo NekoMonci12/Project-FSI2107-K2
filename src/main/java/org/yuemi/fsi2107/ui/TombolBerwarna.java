@@ -56,7 +56,12 @@ public class TombolBerwarna extends JButton {
     @Override
     public void setEnabled(boolean aktif) {
         super.setEnabled(aktif);
-        setForeground(gaya == Gaya.TERISI ? Color.WHITE : (aktif ? warnaDasar : new Color(0xB0BEC5)));
+        setForeground(gaya == Gaya.TERISI ? Color.WHITE
+                : (aktif ? warnaTema() : new Color(0x737B86)));
+    }
+
+    private Color warnaTema() {
+        return TemaUI.isModeGelap() ? peredup(warnaDasar, 0.62f) : warnaDasar;
     }
 
     private static Color pertegas(Color warna, float faktor) {
@@ -101,15 +106,19 @@ public class TombolBerwarna extends JButton {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         boolean aktif = isEnabled();
-        Color warna = warnaDasar;
+        Color warnaDasarTema = warnaTema();
+        Color warna = warnaDasarTema;
         if (!aktif) {
-            warna = new Color(0xB0BEC5);
+            warna = new Color(0x4D545E);
         } else if (getModel().isPressed()) {
-            warna = warnaTekan;
+            warna = peredup(warnaDasarTema, 0.82f);
         } else if (getModel().isRollover()) {
-            warna = warnaHover;
+            warna = pertegas(warnaDasarTema, 1.16f);
         }
 
+        if (gaya == Gaya.GARIS) {
+            setForeground(aktif ? warnaDasarTema : new Color(0x737B86));
+        }
 
         int lebar = getWidth();
         int tinggi = getHeight();

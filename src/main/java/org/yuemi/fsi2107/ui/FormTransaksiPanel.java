@@ -11,6 +11,8 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.JComponent;
+import javax.swing.border.TitledBorder;
 import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
@@ -88,6 +90,7 @@ public class FormTransaksiPanel extends JPanel {
 
         bukuKas.tambahPendengar(this::perbaruiInfoProfil);
         perbaruiInfoProfil(bukuKas);
+        aturModeGelap(TemaUI.isModeGelap());
     }
 
     /**
@@ -213,5 +216,37 @@ public class FormTransaksiPanel extends JPanel {
 
     private void tampilkanPeringatan(String pesan) {
         JOptionPane.showMessageDialog(this, pesan, "Data Belum Lengkap", JOptionPane.WARNING_MESSAGE);
+    }
+
+    void aturModeGelap(boolean aktif) {
+        setBackground(TemaUI.warnaPanel());
+        setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createTitledBorder(
+                        BorderFactory.createLineBorder(TemaUI.warnaGaris()),
+                        " Tambah Transaksi ", TitledBorder.LEADING, TitledBorder.TOP,
+                        null, TemaUI.warnaTeks()),
+                BorderFactory.createEmptyBorder(8, 12, 12, 12)));
+        for (java.awt.Component komponen : getComponents()) {
+            if (komponen instanceof JLabel label) {
+                label.setForeground(label == infoProfil
+                        ? TemaUI.warnaTeksSekunder() : TemaUI.warnaTeks());
+            }
+        }
+        aturWarnaIsian(pilihanJenis, aktif);
+        aturWarnaIsian(pilihanKategori, aktif);
+        aturWarnaIsian(isianNominal, aktif);
+        aturWarnaIsian(isianDeskripsi, aktif);
+        repaint();
+    }
+
+    private static void aturWarnaIsian(JComponent komponen, boolean aktif) {
+        if (komponen instanceof JComboBox<?> combo) {
+            TemaUI.aturComboBox(combo, aktif);
+        } else if (komponen instanceof JTextField teks) {
+            TemaUI.aturTextField(teks, aktif);
+        } else {
+            komponen.setBackground(TemaUI.warnaIsian());
+            komponen.setForeground(TemaUI.warnaTeks());
+        }
     }
 }
