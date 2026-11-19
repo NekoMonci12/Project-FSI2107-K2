@@ -6,10 +6,12 @@ import org.yuemi.fsi2107.service.BukuKas;
 import org.yuemi.fsi2107.ui.ikon.JenisIkon;
 
 import javax.swing.BorderFactory;
+import javax.swing.JComboBox;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.TitledBorder;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -18,12 +20,15 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.event.TableModelEvent;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.FlowLayout;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Panel tabel yang menampilkan seluruh transaksi beserta tombol penghapusan.
@@ -55,6 +60,10 @@ public class TabelTransaksiPanel extends JPanel {
     private final JScrollPane scrollPane;
     private final JPanel pojokHeader = new JPanel();
     private final TombolBerwarna tombolPilihSemua;
+    private final JTextField isianPencarian = new JTextField(24);
+    private final JComboBox<String> pilihanJenis = new JComboBox<>(
+            new String[]{"Semua Jenis", "Uang Masuk", "Uang Keluar"});
+    private final TombolBerwarna tombolReset;
 
     /** Daftar transaksi yang sedang ditampilkan, sejajar indeks dengan baris tabel. */
     private List<Transaksi> transaksiTampil = new ArrayList<>();
@@ -120,7 +129,43 @@ public class TabelTransaksiPanel extends JPanel {
         panelBawah.add(panelKiri, BorderLayout.WEST);
         panelBawah.add(tombolHapus, BorderLayout.EAST);
 
+        isianPencarian.setToolTipText(
+                "Cari berdasarkan waktu, jenis, kategori, deskripsi, atau nominal");
+        isianPencarian.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                tampilkanHasilPencarian();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                tampilkanHasilPencarian();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                tampilkanHasilPencarian();
+            }
+        });
+        pilihanJenis.addActionListener(e -> tampilkanHasilPencarian());
+
+        tombolReset = new TombolBerwarna("Reset", new Color(0x607D8B),
+                TombolBerwarna.Gaya.GARIS);
+        tombolReset.addActionListener(e -> {
+            isianPencarian.setText("");
+            pilihanJenis.setSelectedIndex(0);
+            tampilkanHasilPencarian();
+        });
+
+        JPanel panelAtas = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        panelAtas.setOpaque(false);
+        panelAtas.setBorder(BorderFactory.createEmptyBorder(2, 8, 4, 8));
+        panelAtas.add(isianPencarian);
+        panelAtas.add(pilihanJenis);
+        panelAtas.add(tombolReset);
+
         scrollPane = new JScrollPane(tabel);
+        add(panelAtas, BorderLayout.NORTH);
         add(scrollPane, BorderLayout.CENTER);
         add(panelBawah, BorderLayout.SOUTH);
         aturModeGelap(TemaUI.isModeGelap());
@@ -165,11 +210,32 @@ public class TabelTransaksiPanel extends JPanel {
             idTerpilih = transaksiTampil.get(barisTerpilih).getId();
         }
 
+        tampilkanHasilPencarian(bukuKas);
+
+        if (idTerpilih > 0) {
+            for (int i = 0; i < transaksiTampil.size(); i++) {
+                if (transaksiTampil.get(i).getId() == idTerpilih) {
+                    tabel.setRowSelectionInterval(i, i);
+                    break;
+                }
+            }
+        }
+    }
+
+    private void tampilkanHasilPencarian() {
+        tampilkanHasilPencarian(bukuKas);
+    }
+
+    private void tampilkanHasilPencarian(BukuKas bukuKas) {
         modelTabel.setRowCount(0);
-        transaksiTampil = new ArrayList<>(bukuKas.getDaftarTransaksi());
+        transaksiTampil = new ArrayList<>();
 
         int nomor = 1;
-        for (Transaksi transaksi : transaksiTampil) {
+        for (Transaksi transaksi : bukuKas.getDaftarTransaksi()) {
+            if (!sesuaiPencarian(transaksi)) {
+                continue;
+            }
+            transaksiTampil.add(transaksi);
             modelTabel.addRow(new Object[]{
                     nomor++,
                     transaksi.getWaktuTerformat(),
@@ -184,15 +250,31 @@ public class TabelTransaksiPanel extends JPanel {
             });
         }
         perbaruiTombolPilihSemua();
+    }
 
-        if (idTerpilih > 0) {
-            for (int i = 0; i < transaksiTampil.size(); i++) {
-                if (transaksiTampil.get(i).getId() == idTerpilih) {
-                    tabel.setRowSelectionInterval(i, i);
-                    break;
-                }
-            }
+    private boolean sesuaiPencarian(Transaksi transaksi) {
+        String jenisDipilih = (String) pilihanJenis.getSelectedItem();
+        if (!"Semua Jenis".equals(jenisDipilih)
+                && !transaksi.getJenis().getLabel().equals(jenisDipilih)) {
+            return false;
         }
+
+        String kata = isianPencarian.getText().trim().toLowerCase(Locale.ROOT);
+        if (kata.isEmpty()) {
+            return true;
+        }
+
+        String isi = String.join(" ",
+                transaksi.getWaktuTerformat(),
+                transaksi.getJenis().getLabel(),
+                transaksi.getKategori().getLabel(),
+                transaksi.getDeskripsi(),
+                Transaksi.formatNominal(transaksi.getNominal()),
+                Transaksi.formatNominal(transaksi.getPph()),
+                Transaksi.formatNominal(transaksi.getPpn()),
+                Transaksi.formatNominal(transaksi.getNominalBersih()),
+                Long.toString(transaksi.getNominal()));
+        return isi.toLowerCase(Locale.ROOT).contains(kata);
     }
 
     private void hapusTransaksiTerpilih() {
@@ -269,6 +351,8 @@ public class TabelTransaksiPanel extends JPanel {
         scrollPane.setBackground(TemaUI.warnaPanel());
         scrollPane.setBorder(BorderFactory.createLineBorder(TemaUI.warnaGaris()));
         scrollPane.getViewport().setBackground(TemaUI.warnaPanel());
+        TemaUI.aturTextField(isianPencarian, aktif);
+        TemaUI.aturComboBox(pilihanJenis, aktif);
         TemaUI.aturScrollbarGelap(scrollPane.getVerticalScrollBar(), aktif);
         TemaUI.aturScrollbarGelap(scrollPane.getHorizontalScrollBar(), aktif);
         pojokHeader.setBackground(TemaUI.warnaPanel());
