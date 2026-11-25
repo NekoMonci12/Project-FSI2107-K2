@@ -1,5 +1,5 @@
 # Stage 1: build the jar
-FROM maven:3.9-eclipse-temurin-17 AS build
+FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /src
 COPY pom.xml .
 RUN mvn -q dependency:go-offline
@@ -8,7 +8,7 @@ RUN mvn -q package -DskipTests && \
     cp target/*.jar /tmp/app.jar
 
 # Stage 2: runtime with virtual display + noVNC
-FROM eclipse-temurin:17-jre
+FROM eclipse-temurin:21-jre
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         xvfb x11vnc novnc websockify \
