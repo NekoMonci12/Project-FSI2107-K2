@@ -5,7 +5,8 @@ COPY pom.xml .
 RUN mvn -q dependency:go-offline
 COPY src ./src
 RUN mvn -q package -DskipTests && \
-    cp target/*.jar /tmp/app.jar
+    JAR=$(ls target/*.jar | grep -v '^target/original-' | head -n 1) && \
+    cp "$JAR" /tmp/app.jar
 
 # Stage 2: runtime with virtual display + noVNC
 FROM eclipse-temurin:21-jre
